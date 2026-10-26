@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>益智游戏馆</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <h1 class="logo">🧩 益智游戏馆</h1>
+        <span class="tagline">海龟汤 · 扫雷 · 数独 · 合数 · 2048 · 贪吃蛇</span>
+      </div>
+      <div class="header-tools">
+        <div class="account-actions">
+          <button class="btn btn-ghost btn-sm" id="leaderboard-open" type="button">🏆 全站榜单</button>
+          <button class="btn btn-primary btn-sm" id="auth-open" type="button">登录 / 注册</button>
+        </div>
+        <label class="theme-control">
+          <span>大厅主题</span>
+          <select id="lobby-theme-select" aria-label="选择大厅主题">
+            <option value="moss">苔原青绿</option>
+            <option value="ember">焦糖暖橙</option>
+            <option value="ocean">深海蔚蓝</option>
+            <option value="coral">赤焰珊瑚</option>
+            <option value="vanilla">香草奶霜</option>
+            <option value="seashell">贝壳花语</option>
+            <option value="latte">海盐奶油</option>
+            <option value="mist">雾蓝奶油</option>
+            <option value="classic-light">传统白色</option>
+            <option value="classic-dark">传统黑色</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="site-main">
+    <!-- 游戏大厅 -->
+    <section id="lobby" class="lobby">
+      <div class="lobby-grid" id="lobby-grid">
+        <!-- 卡片由 main.js 根据注册表动态生成 -->
+      </div>
+    </section>
+
+    <!-- 游戏视图 -->
+    <section id="game-view" class="game-view" hidden>
+      <div class="game-view-bar">
+        <button class="btn btn-ghost" id="back-btn" type="button">← 返回大厅</button>
+        <h2 class="game-view-title" id="game-view-title"></h2>
+        <span class="game-view-spacer"></span>
+        <button class="btn btn-sm" id="game-rules-btn" type="button" aria-haspopup="dialog" aria-controls="game-rules-dialog">📖 游戏规则</button>
+        <label class="theme-control game-theme-control">
+          <span>本游戏主题</span>
+          <select id="game-theme-select" aria-label="切换当前小游戏主题">
+            <option value="moss">苔原青绿</option>
+            <option value="ember">焦糖暖橙</option>
+            <option value="ocean">深海蔚蓝</option>
+            <option value="coral">赤焰珊瑚</option>
+            <option value="vanilla">香草奶霜</option>
+            <option value="seashell">贝壳花语</option>
+            <option value="latte">海盐奶油</option>
+            <option value="mist">雾蓝奶油</option>
+            <option value="classic-light">传统白色</option>
+            <option value="classic-dark">传统黑色</option>
+          </select>
+        </label>
+      </div>
+      <div id="game-container" class="game-container"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span id="cloud-status" role="status" aria-live="polite">游戏记录保存在本地浏览器</span>
+  </footer>
+
+  <dialog class="app-dialog" id="game-rules-dialog" aria-labelledby="game-rules-title">
+    <div class="dialog-heading">
+      <h2 id="game-rules-title">游戏规则</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-close-dialog="game-rules-dialog" aria-label="关闭规则">✕</button>
+    </div>
+    <ul class="game-rules-list" id="game-rules-list"></ul>
+  </dialog>
+
+  <dialog class="app-dialog" id="auth-dialog" aria-labelledby="auth-title">
+    <div class="dialog-heading">
+      <h2 id="auth-title">玩家账号</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-close-dialog="auth-dialog" aria-label="关闭">✕</button>
+    </div>
+    <p class="dialog-hint">登录后可在不同设备同步个人最高分；手机号和邮箱注册的是独立账号。</p>
+    <p class="account-session" id="account-session" hidden></p>
+    <form id="email-form" class="auth-form">
+      <h3>邮箱账号</h3>
+      <label>邮箱地址<input id="auth-email" type="email" autocomplete="email" required></label>
+      <label>密码<input id="auth-password" type="password" autocomplete="current-password" minlength="6" required></label>
+      <label>排行榜昵称<input id="email-nickname" type="text" maxlength="20" autocomplete="nickname" placeholder="2–20 个字符"></label>
+      <div class="dialog-actions">
+        <button class="btn btn-primary" type="button" id="email-login">邮箱登录</button>
+        <button class="btn" type="button" id="email-register">注册邮箱账号</button>
+      </div>
+    </form>
+    <form id="phone-form" class="auth-form">
+      <h3>手机号账号</h3>
+      <label>手机号（含国家/地区代码）<input id="auth-phone" type="tel" autocomplete="tel" placeholder="+8613800138000" required></label>
+      <label>排行榜昵称<input id="phone-nickname" type="text" maxlength="20" autocomplete="nickname" placeholder="2–20 个字符"></label>
+      <div class="dialog-actions">
+        <button class="btn" type="button" id="phone-send-code">发送短信验证码</button>
+      </div>
+      <label>短信验证码<input id="phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" required></label>
+      <button class="btn btn-primary" type="button" id="phone-verify">验证并登录 / 注册</button>
+    </form>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" type="button" id="auth-signout" hidden>退出登录</button>
+    </div>
+    <p class="dialog-message" id="auth-message" role="status" aria-live="polite"></p>
+  </dialog>
+
+  <dialog class="app-dialog leaderboard-dialog" id="leaderboard-dialog" aria-labelledby="leaderboard-title">
+    <div class="dialog-heading">
+      <h2 id="leaderboard-title">🏆 全站排行榜</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-close-dialog="leaderboard-dialog" aria-label="关闭">✕</button>
+    </div>
+    <div class="leaderboard-controls">
+      <label for="leaderboard-game">游戏</label>
+      <select id="leaderboard-game">
+        <option value="snake">贪吃蛇</option>
+        <option value="heshu">合数</option>
+        <option value="game2048-4">2048 · 4×4</option>
+        <option value="game2048-5">2048 · 5×5</option>
+        <option value="game2048-6">2048 · 6×6</option>
+      </select>
+      <button class="btn btn-sm" id="leaderboard-refresh" type="button">刷新</button>
+    </div>
+    <p class="dialog-message" id="leaderboard-message" role="status" aria-live="polite"></p>
+    <ol class="leaderboard-list" id="leaderboard-list"></ol>
+    <p class="dialog-hint">当前榜单收录贪吃蛇、合数和 2048；其他游戏暂未定义可比的积分规则。</p>
+  </dialog>
+
+  <script src="js/cloud-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cloud-sync.js"></script>
+  <script src="js/puzzles-a.js"></script>
+  <script src="js/puzzles-b.js"></script>
+  <script src="js/puzzles-c.js"></script>
+  <script src="js/turtle-soup.js"></script>
+  <script src="js/minesweeper.js"></script>
+  <script src="js/sudoku.js"></script>
+  <script src="js/heshu.js"></script>
+  <script src="js/game2048.js"></script>
+  <script src="js/snake.js"></script>
+  <script>
+    // 脚本加载完成后渲染大厅
+    GameHub.renderLobby();
+  </script>
+</body>
+</html>

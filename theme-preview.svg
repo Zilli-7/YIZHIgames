@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 1440 1050" style="display:block;width:100vw;height:auto">
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+      .label { fill: #f8f5eb; font-size: 19px; font-weight: 700; }
+      .small { fill: #f8f5eb; font-size: 12px; opacity: .82; }
+    </style>
+  </defs>
+  <rect width="1440" height="1050" fill="#f0f0ed"/>
+  <text x="64" y="78" fill="#2b3033" font-size="34" font-weight="700">八款新旧主题 · 低饱和棋盘</text>
+  <text x="66" y="111" fill="#596168" font-size="15">色卡 1–4 新增主题；色卡 5–8 沿用图表四组配色。外层游戏区保留主题色，棋盘改为低饱和底色。</text>
+
+  <g transform="translate(64 145)">
+    <rect width="310" height="178" rx="18" fill="#748114"/>
+    <text class="label" x="20" y="34">苔原青绿</text>
+    <text class="small" x="20" y="57">原主题 · 棋盘已降饱和</text>
+    <g transform="translate(20 74)">
+      <rect width="36" height="24" rx="5" fill="#808080"/><rect x="42" width="36" height="24" rx="5" fill="#BDBDBD"/><rect x="84" width="36" height="24" rx="5" fill="#748114"/><rect x="126" width="36" height="24" rx="5" fill="#AEC520"/><rect x="168" width="36" height="24" rx="5" fill="#B1D081"/><rect x="210" width="36" height="24" rx="5" fill="#C8DDA4"/><rect x="252" width="36" height="24" rx="5" fill="#DFEBCC"/>
+    </g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#46483F"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text>
+    <rect x="152" y="119" width="138" height="39" rx="8" fill="#748114"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(390 145)">
+    <rect width="310" height="178" rx="18" fill="#7B4400"/>
+    <text class="label" x="20" y="34">焦糖暖橙</text><text class="small" x="20" y="57">原主题 · 棋盘已降饱和</text>
+    <g transform="translate(20 74)">
+      <rect width="44" height="24" rx="5" fill="#BDBDBD"/><rect x="50" width="44" height="24" rx="5" fill="#7B4400"/><rect x="100" width="44" height="24" rx="5" fill="#B96600"/><rect x="150" width="44" height="24" rx="5" fill="#FFB457"/><rect x="200" width="44" height="24" rx="5" fill="#FFCA88"/><rect x="250" width="38" height="24" rx="5" fill="#FFF2C7"/>
+    </g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#51483E"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#7B4400"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(716 145)">
+    <rect width="310" height="178" rx="18" fill="#07519C"/>
+    <text class="label" x="20" y="34">深海蔚蓝</text><text class="small" x="20" y="57">原主题 · 棋盘已降饱和</text>
+    <g transform="translate(20 74)">
+      <rect width="36" height="24" rx="5" fill="#F9E853"/><rect x="42" width="36" height="24" rx="5" fill="#808080"/><rect x="84" width="36" height="24" rx="5" fill="#07519C"/><rect x="126" width="36" height="24" rx="5" fill="#2171B5"/><rect x="168" width="36" height="24" rx="5" fill="#6BADD7"/><rect x="210" width="36" height="24" rx="5" fill="#9FCBE2"/><rect x="252" width="36" height="24" rx="5" fill="#DFEBF7"/>
+    </g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#3F4C56"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#07519C"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(1042 145)">
+    <rect width="310" height="178" rx="18" fill="#A60F14"/>
+    <text class="label" x="20" y="34">赤焰珊瑚</text><text class="small" x="20" y="57">原主题 · 棋盘已降饱和</text>
+    <g transform="translate(20 74)">
+      <rect width="44" height="24" rx="5" fill="#C0C0C0"/><rect x="50" width="44" height="24" rx="5" fill="#A60F14"/><rect x="100" width="44" height="24" rx="5" fill="#CB181E"/><rect x="150" width="44" height="24" rx="5" fill="#F96A4D"/><rect x="200" width="44" height="24" rx="5" fill="#FABCA1"/><rect x="250" width="38" height="24" rx="5" fill="#FEE1CF"/>
+    </g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#514144"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#A60F14"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+
+  <g transform="translate(64 350)">
+    <rect width="310" height="178" rx="18" fill="#41450C"/>
+    <text class="label" x="20" y="34">香草奶霜</text><text class="small" x="20" y="57">色卡 1 · Vanilla Cream</text>
+    <g transform="translate(20 74)"><rect width="50" height="24" rx="5" fill="#FBF2DA"/><rect x="56" width="50" height="24" rx="5" fill="#FFD2E4"/><rect x="112" width="50" height="24" rx="5" fill="#D19175"/><rect x="168" width="50" height="24" rx="5" fill="#8BA33E"/><rect x="224" width="64" height="24" rx="5" fill="#41450C"/></g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#45463E"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#41450C"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(390 350)">
+    <rect width="310" height="178" rx="18" fill="#006F87"/>
+    <text class="label" x="20" y="34">贝壳花语</text><text class="small" x="20" y="57">色卡 2 · Seashell</text>
+    <g transform="translate(20 74)"><rect width="50" height="24" rx="5" fill="#FFF0E9"/><rect x="56" width="50" height="24" rx="5" fill="#F2A4A5"/><rect x="112" width="50" height="24" rx="5" fill="#E5C5C6"/><rect x="168" width="50" height="24" rx="5" fill="#3059A4"/><rect x="224" width="64" height="24" rx="5" fill="#006F87"/></g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#3E4A4D"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#006F87"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(716 350)">
+    <rect width="310" height="178" rx="18" fill="#3D3630"/>
+    <text class="label" x="20" y="34">海盐奶油</text><text class="small" x="20" y="57">色卡 3 · #C6D2D9 / #A89B89</text>
+    <g transform="translate(20 74)"><rect width="64" height="24" rx="5" fill="#C6D2D9"/><rect x="72" width="64" height="24" rx="5" fill="#A89B89"/><rect x="144" width="64" height="24" rx="5" fill="#FCF6DE"/><rect x="216" width="72" height="24" rx="5" fill="#3D3630"/></g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#494642"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#3D3630"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+  <g transform="translate(1042 350)">
+    <rect width="310" height="178" rx="18" fill="#7F96B2"/>
+    <text class="label" x="20" y="34">雾蓝奶油</text><text class="small" x="20" y="57">色卡 4 · #B7DCED / #C6B093</text>
+    <g transform="translate(20 74)"><rect width="64" height="24" rx="5" fill="#B7DCED"/><rect x="72" width="64" height="24" rx="5" fill="#C6B093"/><rect x="144" width="64" height="24" rx="5" fill="#FCF3CB"/><rect x="216" width="72" height="24" rx="5" fill="#7F96B2"/></g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#4B535B"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#7F96B2"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+  </g>
+
+  <rect x="64" y="565" width="1288" height="420" rx="24" fill="#8BA33E"/>
+  <text x="100" y="625" fill="#FBF2DA" font-size="17" letter-spacing="2">GAME AREA · VANILLA CREAM</text>
+  <text x="100" y="680" fill="#FBF2DA" font-size="36" font-weight="700">游戏区域与棋盘分层</text>
+  <text x="100" y="714" fill="#FBF2DA" font-size="15">游戏区保留色卡深色；棋盘改用低饱和中性色，长时间游玩更舒适。</text>
+  <rect x="100" y="754" width="1216" height="190" rx="20" fill="#41450C" stroke="#FBF2DA" stroke-opacity=".32"/>
+  <text x="132" y="800" fill="#FBF2DA" font-size="17" font-weight="700">2048 · 游戏区</text>
+  <rect x="132" y="820" width="520" height="96" rx="14" fill="#45463E"/>
+  <rect x="148" y="836" width="64" height="64" rx="10" fill="#8BA33E"/><text x="180" y="878" text-anchor="middle" fill="#41450C" font-size="24" font-weight="700">2</text>
+  <rect x="222" y="836" width="64" height="64" rx="10" fill="#D19175"/><text x="254" y="878" text-anchor="middle" fill="#41450C" font-size="24" font-weight="700">4</text>
+  <rect x="296" y="836" width="64" height="64" rx="10" fill="#FFD2E4"/><text x="328" y="878" text-anchor="middle" fill="#41450C" font-size="24" font-weight="700">8</text>
+  <rect x="370" y="836" width="64" height="64" rx="10" fill="#FBF2DA"/><text x="402" y="878" text-anchor="middle" fill="#41450C" font-size="24" font-weight="700">16</text>
+  <rect x="1040" y="786" width="230" height="46" rx="23" fill="#8BA33E" stroke="#FBF2DA" stroke-opacity=".4"/>
+  <text x="1155" y="815" text-anchor="middle" fill="#FBF2DA" font-size="14">🎨 本游戏主题：香草奶霜</text>
+  <text x="100" y="971" fill="#FBF2DA" font-size="13" opacity=".85">棋盘色与主题外框已拉开明度/饱和度差异；四个新主题来源于你提供的前四张色卡。</text>
+</svg>

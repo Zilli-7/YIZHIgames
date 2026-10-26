@@ -1,0 +1,505 @@
+:root {
+  --page-bg: #8A8E7E;
+  --game-bg: #68704A;
+  --board-bg: #46483F;
+  --board-cell: #55574D;
+  --surface: #68704A;
+  --surface-hover: #757B57;
+  --accent: #A7B084;
+  --accent-soft: #C5D0A7;
+  --accent-ink: #272B20;
+  --text: #E5E9DC;
+  --text-dim: #E5E9DC;
+  --danger: #E5E9DC;
+  --ok: #C5D0A7;
+  --warn: #E4CDAE;
+  --line: rgba(255, 255, 255, 0.22);
+  --tile-1: #D7DDC7;
+  --tile-2: #D0DAC1;
+  --tile-3: #E2D8C5;
+  --tile-4: #D1DBDE;
+  --tile-5: #E2D4CB;
+  --tile-6: #CBD8C6;
+  --tile-ink: #283027;
+  --radius: 14px;
+  --shadow: 0 14px 35px rgba(20, 25, 8, 0.22);
+}
+
+:root[data-theme="moss"] {
+  --page-bg: #8A8E7E;
+  --game-bg: #68704A;
+  --board-bg: #46483F;
+  --board-cell: #55574D;
+  --surface: #68704A;
+  --surface-hover: #757B57;
+  --accent: #A7B084;
+  --accent-soft: #C5D0A7;
+  --accent-ink: #272B20;
+  --text: #E5E9DC;
+  --text-dim: #E5E9DC;
+  --danger: #E5E9DC;
+  --ok: #C5D0A7;
+  --warn: #E4CDAE;
+  --line: rgba(223, 235, 204, 0.3);
+  --tile-1: #D7DDC7;
+  --tile-2: #D0DAC1;
+  --tile-3: #E2D8C5;
+  --tile-4: #D1DBDE;
+  --tile-5: #E2D4CB;
+  --tile-6: #CBD8C6;
+  --tile-ink: #283027;
+}
+
+:root[data-theme="ember"] {
+  --page-bg: #9D8C7C;
+  --game-bg: #695A4B;
+  --board-bg: #4B4843;
+  --board-cell: #5A544C;
+  --surface: #695A4B;
+  --surface-hover: #796A58;
+  --accent: #D0AA7D;
+  --accent-soft: #E4C9A3;
+  --accent-ink: #34281E;
+  --text: #F3EADD;
+  --text-dim: #F3EADD;
+  --danger: #F3EADD;
+  --ok: #E4C9A3;
+  --warn: #E8D4B8;
+  --line: rgba(243, 234, 221, 0.3);
+  --tile-1: #EAD8C4;
+  --tile-2: #E2CCB3;
+  --tile-3: #F0E0CB;
+  --tile-4: #D9D9D2;
+  --tile-5: #E8D2C3;
+  --tile-6: #D8D9C4;
+  --tile-ink: #352A22;
+}
+
+:root[data-theme="ocean"] {
+  --page-bg: #738894;
+  --game-bg: #405F70;
+  --board-bg: #414B52;
+  --board-cell: #4E5A61;
+  --surface: #405F70;
+  --surface-hover: #4D6B7B;
+  --accent: #8BAFC0;
+  --accent-soft: #B7CED7;
+  --accent-ink: #223A49;
+  --text: #E6EDF0;
+  --text-dim: #E6EDF0;
+  --danger: #E9D9AF;
+  --ok: #B7CED7;
+  --warn: #E9D9AF;
+  --line: rgba(230, 237, 240, 0.32);
+  --tile-1: #D0E0E7;
+  --tile-2: #C4D8E1;
+  --tile-3: #DFE5E4;
+  --tile-4: #C8D6D0;
+  --tile-5: #D9D3C3;
+  --tile-6: #C7D9E2;
+  --tile-ink: #23323B;
+}
+
+:root[data-theme="coral"] {
+  --page-bg: #A67F7D;
+  --game-bg: #765653;
+  --board-bg: #514648;
+  --board-cell: #605256;
+  --surface: #765653;
+  --surface-hover: #876662;
+  --accent: #D38D7C;
+  --accent-soft: #E5BBAA;
+  --accent-ink: #402A29;
+  --text: #F5E7E0;
+  --text-dim: #F5E7E0;
+  --danger: #F5E7E0;
+  --ok: #E5BBAA;
+  --warn: #F0D5C9;
+  --line: rgba(245, 231, 224, 0.34);
+  --tile-1: #ECD4D0;
+  --tile-2: #E5C7C3;
+  --tile-3: #F0D9CF;
+  --tile-4: #D6DADD;
+  --tile-5: #E8CDC6;
+  --tile-6: #DFD8C7;
+  --tile-ink: #3D2C2B;
+}
+
+:root[data-theme="vanilla"] {
+  --page-bg: #98A080;
+  --game-bg: #4E5339;
+  --board-bg: #45463E;
+  --board-cell: #55564D;
+  --surface: #4E5339;
+  --surface-hover: #5D6246;
+  --accent: #C19481;
+  --accent-soft: #E2CCB5;
+  --accent-ink: #382F26;
+  --text: #F3EFDF;
+  --text-dim: #F3EFDF;
+  --danger: #E2CCB5;
+  --ok: #D7DEC4;
+  --warn: #E2CCB5;
+  --line: rgba(243, 239, 223, 0.34);
+  --tile-1: #D8DEC4;
+  --tile-2: #E6D2C6;
+  --tile-3: #F1DFDC;
+  --tile-4: #E6E1C8;
+  --tile-5: #D4DCC0;
+  --tile-6: #E8D4C4;
+  --tile-ink: #303323;
+}
+
+:root[data-theme="seashell"] {
+  --page-bg: #C9B8A8;
+  --game-bg: #36545A;
+  --board-bg: #343F42;
+  --board-cell: #455154;
+  --surface: #36545A;
+  --surface-hover: #45636A;
+  --accent: #D49A91;
+  --accent-soft: #E4BFB0;
+  --accent-ink: #48312F;
+  --text: #F6EEE5;
+  --text-dim: #F6EEE5;
+  --danger: #E4BFB0;
+  --ok: #C4D1C4;
+  --warn: #E7C7A9;
+  --line: rgba(246, 238, 229, 0.36);
+  --tile-1: #E8D8C9;
+  --tile-2: #D9E1D9;
+  --tile-3: #E9CFCA;
+  --tile-4: #D4DFDE;
+  --tile-5: #E8DCCB;
+  --tile-6: #D9D7CD;
+  --tile-ink: #303637;
+}
+
+:root[data-theme="classic-light"] {
+  --page-bg: #F5F5F5;
+  --game-bg: #FFFFFF;
+  --board-bg: #E8EAED;
+  --board-cell: #F1F3F4;
+  --surface: #FFFFFF;
+  --surface-hover: #EEF1F4;
+  --accent: #7891A8;
+  --accent-soft: #DCE6EF;
+  --accent-ink: #253746;
+  --text: #202124;
+  --text-dim: #3C4043;
+  --danger: #B3261E;
+  --ok: #2E7D32;
+  --warn: #8A5A00;
+  --line: rgba(32, 33, 36, 0.18);
+  --tile-1: #DCE6EF;
+  --tile-2: #E4E8DC;
+  --tile-3: #F0E4D6;
+  --tile-4: #DDE9E7;
+  --tile-5: #EBDDE0;
+  --tile-6: #E5E1D5;
+  --tile-ink: #263238;
+}
+
+:root[data-theme="classic-dark"] {
+  --page-bg: #000000;
+  --game-bg: #121212;
+  --board-bg: #1E1E1E;
+  --board-cell: #2A2A2A;
+  --surface: #171717;
+  --surface-hover: #252525;
+  --accent: #90CAF9;
+  --accent-soft: #263B4D;
+  --accent-ink: #EAF5FF;
+  --text: #F5F5F5;
+  --text-dim: #D6D6D6;
+  --danger: #FF8A80;
+  --ok: #A5D6A7;
+  --warn: #FFD180;
+  --line: rgba(255, 255, 255, 0.22);
+  --tile-1: #263B4D;
+  --tile-2: #33443A;
+  --tile-3: #4A3D31;
+  --tile-4: #304344;
+  --tile-5: #49373D;
+  --tile-6: #444238;
+  --tile-ink: #F5F5F5;
+}
+
+:root[data-theme="latte"] {
+  --page-bg: #A69D90;
+  --game-bg: #49433D;
+  --board-bg: #494642;
+  --board-cell: #58544F;
+  --surface: #49433D;
+  --surface-hover: #5A5148;
+  --accent: #C6D2D9;
+  --accent-soft: #B8B0A3;
+  --accent-ink: #30363A;
+  --text: #FCF6DE;
+  --text-dim: #FCF6DE;
+  --danger: #C6D2D9;
+  --ok: #C6D2D9;
+  --warn: #FCF6DE;
+  --line: rgba(252, 246, 222, 0.34);
+  --tile-1: #D8D0C3;
+  --tile-2: #D4DFE3;
+  --tile-3: #F0E7D2;
+  --tile-4: #D8E0E2;
+  --tile-5: #D6CFC4;
+  --tile-6: #E9E5D8;
+  --tile-ink: #343231;
+}
+
+:root[data-theme="mist"] {
+  --page-bg: #B7A892;
+  --game-bg: #8292A4;
+  --board-bg: #4B535B;
+  --board-cell: #59636C;
+  --surface: #8292A4;
+  --surface-hover: #91A0B1;
+  --accent: #B7DCED;
+  --accent-soft: #FCF3CB;
+  --accent-ink: #344556;
+  --text: #FCF3CB;
+  --text-dim: #FCF3CB;
+  --danger: #B7DCED;
+  --ok: #B7DCED;
+  --warn: #FCF3CB;
+  --line: rgba(252, 243, 203, 0.38);
+  --tile-1: #D1DCE4;
+  --tile-2: #C9DCE4;
+  --tile-3: #EBE5D3;
+  --tile-4: #D8D2C6;
+  --tile-5: #D7E0E5;
+  --tile-6: #E5E0CE;
+  --tile-ink: #34404A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background: var(--page-bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Microsoft YaHei", Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------- 头部 ---------- */
+.site-header {
+  padding: 22px 24px 8px;
+}
+.header-inner {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.brand { display: flex; flex-direction: column; align-items: flex-start; }
+.theme-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.logo {
+  font-size: 1.8rem;
+  letter-spacing: .4px;
+  color: var(--text);
+}
+.tagline {
+  margin-top: 3px;
+  color: var(--text-dim);
+  opacity: .82;
+  font-size: 0.9rem;
+}
+
+/* ---------- 主体 ---------- */
+.site-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+/* ---------- 大厅卡片 ---------- */
+.lobby-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+.game-card {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(155deg, var(--surface-hover), var(--surface));
+  padding: 22px 20px 18px;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  text-align: left;
+  color: var(--text);
+}
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--text);
+  filter: brightness(1.08);
+}
+.game-card .icon {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+.game-card .name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.game-card .desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  opacity: .82;
+}
+.game-card .badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--page-bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+/* ---------- 游戏视图 ---------- */
+.game-view-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.game-view-title {
+  font-size: 1.3rem;
+  color: var(--text);
+}
+.game-view-spacer { flex: 1; }
+
+.game-container {
+  background: var(--game-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  min-height: 320px;
+}
+
+/* ---------- 通用按钮 ---------- */
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.btn:hover { background: var(--surface-hover); }
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.btn-primary:hover { filter: brightness(1.08); }
+.btn-ghost { background: transparent; }
+.btn-sm { padding: 5px 12px; font-size: 0.82rem; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+select, input[type="text"], input[type="number"], textarea {
+  background: var(--game-bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: 9px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+}
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent-soft);
+}
+
+/* ---------- 页脚 ---------- */
+.site-footer {
+  padding: 18px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+/* ---------- 通用游戏内元素 ---------- */
+.game-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  opacity: .86;
+  font-size: 0.9rem;
+}
+.stat b { color: var(--text); }
+.hint-text {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+.msg {
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+.msg.ok { color: var(--ok); }
+.msg.danger { color: var(--danger); }
+.msg.warn { color: var(--warn); }
+
+.theme-control select {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: .82rem;
+  cursor: pointer;
+}
+.game-theme-control { margin-left: auto; }
+
+/* 移动端 */
+@media (max-width: 560px) {
+  .logo { font-size: 1.5rem; }
+  .header-inner { align-items: flex-start; flex-direction: column; }
+  .theme-control { width: 100%; justify-content: space-between; }
+  .game-theme-control { width: auto; }
+  .game-theme-control span { display: none; }
+  .game-view-title { font-size: 1.1rem; }
+  .game-container { padding: 14px; }
+  .lobby-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+}

@@ -115,7 +115,7 @@
     const boardEl = document.createElement('div');
     boardEl.style.cssText =
       'position:relative;display:grid;gap:' + GAP + 'px;padding:' + PAD + 'px;' +
-      'background:var(--board-bg);border:2px dashed var(--text);border-radius:12px;touch-action:none;';
+      'background:var(--board-bg);border:2px dashed var(--text);border-radius:12px;touch-action:none;max-width:100%;';
     root.appendChild(boardEl);
 
     const hint = document.createElement('div');
@@ -167,15 +167,24 @@
         ? (shade === 0 ? 0.90 : 0.95) - paletteIndex * 0.105
         : 0.25 + paletteIndex * 0.105;
       const hsl = toHsl(themePalette[paletteIndex]);
-      const rgb = fromHsl(hsl.h, Math.min(0.62, Math.max(hsl.s, 0.38)), lightness);
-      const background = { r: rgb[0], g: rgb[1], b: rgb[2] };
+      const saturation = Math.min(0.62, Math.max(hsl.s, 0.38));
       const darkInk = { r: 32, g: 37, b: 31 };
       const lightInk = { r: 247, g: 244, b: 232 };
+      let adjustedLightness = lightness;
+      let rgb = fromHsl(hsl.h, saturation, adjustedLightness);
+      let background = { r: rgb[0], g: rgb[1], b: rgb[2] };
+      let darkContrast = contrastRatio(darkInk, background);
+      let lightContrast = contrastRatio(lightInk, background);
+      for (let attempt = 0; Math.max(darkContrast, lightContrast) < 4.5 && attempt < 40; attempt++) {
+        adjustedLightness += darkContrast >= lightContrast ? 0.01 : -0.01;
+        rgb = fromHsl(hsl.h, saturation, adjustedLightness);
+        background = { r: rgb[0], g: rgb[1], b: rgb[2] };
+        darkContrast = contrastRatio(darkInk, background);
+        lightContrast = contrastRatio(lightInk, background);
+      }
       return {
         background: 'rgb(' + rgb.join(', ') + ')',
-        ink: contrastRatio(darkInk, background) >= contrastRatio(lightInk, background)
-          ? '#20251F'
-          : '#F7F4E8'
+        ink: darkContrast >= lightContrast ? '#20251F' : '#F7F4E8'
       };
     }
 
@@ -313,6 +322,26 @@
       renderTiles();
     }
 
+    function fitCellToWidth() {
+      const styles = getComputedStyle(container);
+      const availableWidth = container.clientWidth -
+        parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+      return Math.max(28, Math.min(CELL_MAP[SIZE],
+        Math.floor((availableWidth - GAP * (SIZE - 1) - PAD * 2 - 4) / SIZE)));
+    }
+
+    function resizeBoard() {
+      const fittedCell = fitCellToWidth();
+      if (fittedCell === CELL) return;
+      CELL = fittedCell;
+      boardEl.querySelectorAll('.g2-bg').forEach(el => {
+        el.style.width = CELL + 'px';
+        el.style.height = CELL + 'px';
+      });
+      boardEl.style.gridTemplateColumns = 'repeat(' + SIZE + ', ' + CELL + 'px)';
+      renderTiles();
+    }
+
     function newGame() {
       score = 0; over = false; won = false;
       scoreEl.textContent = '0';
@@ -322,7 +351,7 @@
 
     function changeSize() {
       SIZE = parseInt(sizeSel.value, 10);
-      CELL = CELL_MAP[SIZE];
+      CELL = fitCellToWidth();
       bestEl.textContent = GameHub.loadBest(bestKey());
       newGame();
     }
@@ -420,12 +449,15 @@
     root.querySelector('#g2-new').addEventListener('click', newGame);
     sizeSel.addEventListener('change', changeSize);
     animSel.addEventListener('change', () => { animSpeed = animSel.value; });
+    window.addEventListener('resize', resizeBoard);
 
+    CELL = fitCellToWidth();
     newGame();
 
     return function cleanup() {
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('gamehub-theme-change', onThemeChange);
+      window.removeEventListener('resize', resizeBoard);
     };
   }
 

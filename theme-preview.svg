@@ -64,10 +64,10 @@
     <rect x="20" y="119" width="124" height="39" rx="8" fill="#494642"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#3D3630"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
   </g>
   <g transform="translate(1042 350)">
-    <rect width="310" height="178" rx="18" fill="#7F96B2"/>
-    <text class="label" x="20" y="34">雾蓝奶油</text><text class="small" x="20" y="57">色卡 4 · #B7DCED / #C6B093</text>
-    <g transform="translate(20 74)"><rect width="64" height="24" rx="5" fill="#B7DCED"/><rect x="72" width="64" height="24" rx="5" fill="#C6B093"/><rect x="144" width="64" height="24" rx="5" fill="#FCF3CB"/><rect x="216" width="72" height="24" rx="5" fill="#7F96B2"/></g>
-    <rect x="20" y="119" width="124" height="39" rx="8" fill="#4B535B"/><text class="small" x="82" y="143" text-anchor="middle">低饱和棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#7F96B2"/><text class="small" x="221" y="143" text-anchor="middle">主题游戏区</text>
+    <rect width="310" height="178" rx="18" fill="#E7DDC9"/>
+    <text class="label" x="20" y="34" fill="#354654">雾蓝奶油</text><text class="small" x="20" y="57" fill="#354654">蓝黄原色卡 · #B7DCED / #FCF3CB</text>
+    <g transform="translate(20 74)"><rect width="64" height="24" rx="5" fill="#B7DCED"/><rect x="72" width="64" height="24" rx="5" fill="#FCF3CB"/><rect x="144" width="64" height="24" rx="5" fill="#C6B093"/><rect x="216" width="72" height="24" rx="5" fill="#7F96B2"/></g>
+    <rect x="20" y="119" width="124" height="39" rx="8" fill="#AFC7D8"/><text class="small" x="82" y="143" text-anchor="middle" fill="#354654">清透棋盘</text><rect x="152" y="119" width="138" height="39" rx="8" fill="#D5EAF3"/><text class="small" x="221" y="143" text-anchor="middle" fill="#354654">明亮游戏区</text>
   </g>
 
   <rect x="64" y="565" width="1288" height="420" rx="24" fill="#8BA33E"/>

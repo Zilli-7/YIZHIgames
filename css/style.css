@@ -251,29 +251,41 @@
 }
 
 :root[data-theme="mist"] {
-  --page-bg: #B7A892;
-  --game-bg: #8292A4;
-  --board-bg: #4B535B;
-  --board-cell: #59636C;
-  --surface: #8292A4;
-  --surface-hover: #91A0B1;
-  --accent: #B7DCED;
-  --accent-soft: #FCF3CB;
-  --accent-ink: #344556;
-  --text: #FCF3CB;
-  --text-dim: #FCF3CB;
-  --danger: #B7DCED;
-  --ok: #B7DCED;
-  --warn: #FCF3CB;
-  --line: rgba(252, 243, 203, 0.38);
-  --tile-1: #D1DCE4;
-  --tile-2: #C9DCE4;
-  --tile-3: #EBE5D3;
-  --tile-4: #D8D2C6;
-  --tile-5: #D7E0E5;
-  --tile-6: #E5E0CE;
+  --page-bg: #E7DDC9;
+  --game-bg: #D5EAF3;
+  --board-bg: #AFC7D8;
+  --board-cell: #D8E8EE;
+  --surface: #D2E5EC;
+  --surface-hover: #E1EEF2;
+  --accent: #FCF3CB;
+  --accent-soft: #B7DCED;
+  --accent-ink: #354654;
+  --text: #354654;
+  --text-dim: #435967;
+  --page-ink: #354654;
+  --surface-ink: #354654;
+  --game-ink: #354654;
+  --danger: #8A4F47;
+  --ok: #516D5C;
+  --warn: #79643F;
+  --line: rgba(53, 70, 84, 0.22);
+  --tile-1: #B7DCED;
+  --tile-2: #FCF3CB;
+  --tile-3: #AFC7D8;
+  --tile-4: #C6B093;
+  --tile-5: #D5EAF3;
+  --tile-6: #E9DDAF;
   --tile-ink: #34404A;
 }
+
+:root[data-theme="mist"] .site-header .logo,
+:root[data-theme="mist"] .site-header .tagline,
+:root[data-theme="mist"] .site-header .theme-control,
+:root[data-theme="mist"] .site-header #leaderboard-open {
+  color: #263746;
+}
+:root[data-theme="mist"] .site-header .theme-control select { color: #263746; }
+:root[data-theme="mist"] .site-header .tagline { opacity: 1; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -375,6 +387,11 @@ body {
   color: var(--text-dim);
   opacity: .82;
 }
+.ts-question-number {
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 .game-card .badge {
   position: absolute;
   top: 14px;
@@ -410,6 +427,33 @@ body {
   min-height: 320px;
 }
 
+.snake-touch-controls { display: none; }
+
+.minesweeper-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+.minesweeper-game .game-toolbar,
+.minesweeper-game #ms-custom {
+  justify-content: center;
+  width: 100%;
+}
+.minesweeper-game .hint-text { text-align: center; }
+.minesweeper-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.minesweeper-actions .hint-text { margin: 0; }
+.minesweeper-actions #ms-flag-mode { white-space: nowrap; }
+
 /* ---------- 通用按钮 ---------- */
 .btn {
   appearance: none;
@@ -434,6 +478,15 @@ body {
 .btn-ghost { background: transparent; }
 .btn-sm { padding: 5px 12px; font-size: 0.82rem; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.leaderboard-dialog [data-close-dialog] {
+  background: color-mix(in srgb, var(--accent) 35%, #202124);
+  border-color: var(--accent-soft);
+  color: #FFFFFF;
+}
+.leaderboard-dialog [data-close-dialog]:hover {
+  filter: brightness(1.15);
+}
 
 select, input[type="text"], input[type="number"], textarea {
   background: var(--game-bg);
@@ -501,5 +554,36 @@ select:focus, input:focus, textarea:focus {
   .game-theme-control span { display: none; }
   .game-view-title { font-size: 1.1rem; }
   .game-container { padding: 14px; }
+  .game-container,
+  .game-container > * { min-width: 0; }
+  .game-container .game-toolbar { justify-content: center; }
+  .minesweeper-game #ms-board-wrap { scrollbar-width: thin; }
+  #ts-form, #ts-guess { flex-wrap: wrap; }
+  #ts-form input, #ts-guess input { min-width: 0; }
   .lobby-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .snake-touch-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 54px);
+    grid-template-rows: repeat(2, 48px);
+    grid-template-areas: ". up ." "left down right";
+    gap: 8px;
+    margin-top: 12px;
+    touch-action: manipulation;
+  }
+  .snake-touch-controls button {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.15rem;
+    font-weight: 700;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .snake-touch-controls button:active { background: var(--surface-hover); }
+  .snake-touch-controls [data-direction="up"] { grid-area: up; }
+  .snake-touch-controls [data-direction="left"] { grid-area: left; }
+  .snake-touch-controls [data-direction="down"] { grid-area: down; }
+  .snake-touch-controls [data-direction="right"] { grid-area: right; }
 }

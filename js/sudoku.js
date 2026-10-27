@@ -88,9 +88,10 @@
     let noteMode = false;
     let timer = null;
     let seconds = 0;
+    let cellSize = 44;
 
     const root = document.createElement('div');
-    root.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+    root.style.cssText = 'display:flex;flex-direction:column;align-items:center;width:100%;';
     root.innerHTML =
       '<div class="game-toolbar" style="width:100%;justify-content:center;">' +
         '<select id="sd-diff">' +
@@ -105,7 +106,7 @@
         '<button class="btn btn-sm btn-primary" id="sd-new" type="button">新游戏</button>' +
       '</div>' +
       '<div id="sd-board" style="display:grid;grid-template-columns:repeat(9,44px);gap:0;border:3px solid #0000;border-radius:8px;overflow:hidden;"></div>' +
-      '<div id="sd-pad" style="display:grid;grid-template-columns:repeat(9,44px);gap:4px;margin-top:14px;"></div>' +
+      '<div id="sd-pad" style="display:grid;grid-template-columns:repeat(9,44px);gap:2px;margin-top:14px;"></div>' +
       '<div id="sd-msg" class="msg" style="text-align:center;"></div>';
 
     container.appendChild(root);
@@ -144,14 +145,22 @@
       msgEl.className = 'msg ' + (tone || '');
     }
 
+    function fitCellSize() {
+      const styles = getComputedStyle(container);
+      const availableWidth = container.clientWidth -
+        parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
+      return Math.max(22, Math.min(44, Math.floor((availableWidth - 16) / 9)));
+    }
+
     function render() {
       boardEl.innerHTML = '';
+      boardEl.style.gridTemplateColumns = 'repeat(9,' + cellSize + 'px)';
       for (let i = 0; i < 81; i++) {
         const r = Math.floor(i / 9), c = i % 9;
         const cell = document.createElement('div');
         cell.style.cssText =
-          'width:44px;height:44px;display:flex;align-items:center;justify-content:center;' +
-          'font-size:1.15rem;font-weight:600;cursor:pointer;position:relative;' +
+          'width:' + cellSize + 'px;height:' + cellSize + 'px;display:flex;align-items:center;justify-content:center;' +
+          'font-size:' + Math.max(15, cellSize * 0.42) + 'px;font-weight:600;cursor:pointer;position:relative;' +
           'background:' + (selected === i ? 'var(--accent)' : (given[i] ? 'var(--surface)' : 'var(--board-bg)')) + ';' +
           'border:1px solid var(--line);';
         // 3×3 宫粗边框
@@ -163,7 +172,7 @@
           cell.textContent = grid[i];
           cell.style.color = selected === i ? 'var(--accent-ink)' : (given[i] ? 'var(--text)' : (wrong ? 'var(--danger)' : 'var(--accent-soft)'));
         } else if (notes[i].size > 0) {
-          cell.innerHTML = '<span style="font-size:.6rem;font-weight:400;color:var(--text-dim);display:grid;grid-template-columns:repeat(3,12px);line-height:1;">' +
+          cell.innerHTML = '<span style="font-size:.6rem;font-weight:400;color:var(--text-dim);display:grid;grid-template-columns:repeat(3,' + Math.floor(cellSize / 3) + 'px);line-height:1;">' +
             [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => '<span style="text-align:center;">' + (notes[i].has(n) ? n : '') + '</span>').join('') +
             '</span>';
         }
@@ -176,10 +185,11 @@
 
     function renderPad() {
       padEl.innerHTML = '';
+      padEl.style.gridTemplateColumns = 'repeat(9,' + cellSize + 'px)';
       for (let n = 1; n <= 9; n++) {
         const b = document.createElement('button');
         b.className = 'btn';
-        b.style.cssText = 'width:44px;height:44px;font-size:1.1rem;font-weight:700;';
+        b.style.cssText = 'width:' + cellSize + 'px;height:' + cellSize + 'px;font-size:1.1rem;font-weight:700;';
         b.textContent = n;
         b.addEventListener('click', () => input(n));
         padEl.appendChild(b);
@@ -250,13 +260,23 @@
     root.querySelector('#sd-new').addEventListener('click', newGame);
     diffSel.addEventListener('change', newGame);
     document.addEventListener('keydown', onKey);
+    function onResize() {
+      const fittedSize = fitCellSize();
+      if (fittedSize === cellSize) return;
+      cellSize = fittedSize;
+      renderPad();
+      render();
+    }
+    window.addEventListener('resize', onResize);
 
+    cellSize = fitCellSize();
     renderPad();
     newGame();
 
     return function cleanup() {
       stopTimer();
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
     };
   }
 

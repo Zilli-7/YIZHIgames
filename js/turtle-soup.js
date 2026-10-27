@@ -76,7 +76,7 @@
             'padding:10px 12px;margin:6px 0;border:1px solid var(--line);border-radius:10px;' +
             'background:var(--surface);cursor:pointer;transition:background .15s;';
           item.innerHTML =
-            '<div style="color:var(--accent-soft);font-size:.8rem;">第 ' + (i + 1) + ' 题</div>' +
+            '<div class="ts-question-number">第 ' + (i + 1) + ' 题</div>' +
             '<div style="font-size:.95rem;line-height:1.5;">' + escapeHtml(p.title) + '</div>';
           item.addEventListener('mouseenter', () => item.style.background = 'var(--surface-hover)');
           item.addEventListener('mouseleave', () => item.style.background = 'var(--surface)');

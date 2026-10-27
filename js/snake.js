@@ -26,7 +26,7 @@
     const canvas = document.createElement('canvas');
     canvas.width = GRID * CELL;
     canvas.height = GRID * CELL;
-    canvas.style.cssText = 'display:block;margin:0 auto;background:var(--board-bg);border-radius:10px;border:2px solid ' + gridColor + ';';
+    canvas.style.cssText = 'display:block;margin:0 auto;max-width:100%;height:auto;aspect-ratio:1;background:var(--board-bg);border-radius:10px;border:2px solid ' + gridColor + ';touch-action:none;';
     const ctx = canvas.getContext('2d');
 
     const root = document.createElement('div');
@@ -52,11 +52,20 @@
       '<button class="btn btn-sm" id="sn-pause" type="button">暂停</button>';
     root.appendChild(bar);
     root.appendChild(canvas);
+    const touchControls = document.createElement('div');
+    touchControls.className = 'snake-touch-controls';
+    touchControls.setAttribute('aria-label', '贪吃蛇方向控制');
+    touchControls.innerHTML =
+      '<button type="button" data-direction="up" aria-label="向上">▲</button>' +
+      '<button type="button" data-direction="left" aria-label="向左">◀</button>' +
+      '<button type="button" data-direction="down" aria-label="向下">▼</button>' +
+      '<button type="button" data-direction="right" aria-label="向右">▶</button>';
+    root.appendChild(touchControls);
 
     const hint = document.createElement('div');
     hint.className = 'hint-text';
     hint.style.textAlign = 'center';
-    hint.textContent = '方向键 / WASD 控制方向 · 吃到食物增长 · 撞墙或撞到自己结束 · 可随时切换速度与网格颜色';
+    hint.textContent = '方向键 / WASD、滑动棋盘或触摸方向键控制 · 吃到食物增长 · 撞墙或撞到自己结束';
     root.appendChild(hint);
 
     container.appendChild(root);
@@ -201,6 +210,13 @@
       pauseBtn.textContent = paused ? '继续' : '暂停';
     }
 
+    function changeDirection(direction) {
+      if (!started || paused || !alive) return;
+      const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
+      if (opposite[direction] === dir) return;
+      nextDir = direction;
+    }
+
     function onKey(e) {
       const map = {
         ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
@@ -209,9 +225,28 @@
       const d = map[e.key];
       if (!d) return;
       e.preventDefault();
-      const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
-      if (opposite[d] === dir) return; // 不能直接反向
-      nextDir = d;
+      changeDirection(d);
+    }
+
+    let touchStart = null;
+    function onPointerDown(e) {
+      if (e.pointerType !== 'touch') return;
+      touchStart = { x: e.clientX, y: e.clientY };
+    }
+
+    function onPointerUp(e) {
+      if (e.pointerType !== 'touch' || !touchStart) return;
+      const dx = e.clientX - touchStart.x;
+      const dy = e.clientY - touchStart.y;
+      touchStart = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 18) return;
+      changeDirection(Math.abs(dx) > Math.abs(dy)
+        ? (dx > 0 ? 'right' : 'left')
+        : (dy > 0 ? 'down' : 'up'));
+    }
+
+    function onPointerCancel() {
+      touchStart = null;
     }
 
     function onSpeedChange() {
@@ -237,6 +272,13 @@
     }
 
     document.addEventListener('keydown', onKey);
+    canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerCancel);
+    touchControls.addEventListener('click', e => {
+      const button = e.target.closest('[data-direction]');
+      if (button) changeDirection(button.dataset.direction);
+    });
     window.addEventListener('gamehub-theme-change', onThemeChange);
     startBtn.addEventListener('click', start);
     pauseBtn.addEventListener('click', togglePause);
@@ -248,6 +290,9 @@
     return function cleanup() {
       clearInterval(loopTimer);
       document.removeEventListener('keydown', onKey);
+      canvas.removeEventListener('pointerdown', onPointerDown);
+      canvas.removeEventListener('pointerup', onPointerUp);
+      canvas.removeEventListener('pointercancel', onPointerCancel);
       window.removeEventListener('gamehub-theme-change', onThemeChange);
     };
   }
@@ -259,7 +304,7 @@
     desc: '经典贪吃蛇，四档速度 + 虚线格子 + 调色盘自定义颜色',
     badge: '街机',
     rules: [
-      '点击“开始”后，用方向键或 WASD 控制蛇移动；点击“暂停”可暂停或继续。',
+      '点击“开始”后，可用方向键、WASD、棋盘滑动或触摸方向键控制蛇移动；点击“暂停”可暂停或继续。',
       '吃到食物后蛇身增长并获得分数，蛇会随得分逐渐加速。',
       '撞到棋盘边界或自己的身体时游戏结束。',
       '可随时调整速度档位，并使用调色盘自定义网格颜色。'

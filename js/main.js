@@ -85,14 +85,14 @@
     },
     mist: {
       name: '雾蓝奶油',
-      page: '#D7D0C3',
-      game: '#A7C5D3',
-      board: '#7F96B2',
-      text: '#344B55',
-      accent: '#7F96B2',
-      accentSoft: '#FCF3CB',
-      danger: '#A94F55',
-      colors: ['#B7DCED', '#FCF3CB', '#C6B093', '#7F96B2', '#A7C5D3', '#D5C3A6', '#34404A']
+      page: '#E7DDC9',
+      game: '#D5EAF3',
+      board: '#AFC7D8',
+      text: '#354654',
+      accent: '#FCF3CB',
+      accentSoft: '#B7DCED',
+      danger: '#8A4F47',
+      colors: ['#E7DDC9', '#D5EAF3', '#FCF3CB', '#AFC7D8', '#B7DCED', '#D8E8EE', '#354654']
     },
     'classic-light': {
       name: '传统白色',

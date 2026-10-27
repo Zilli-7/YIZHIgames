@@ -90,10 +90,15 @@
 
   function init(container) {
     container.innerHTML = '';
-    const availableWidth = Math.min(container.clientWidth || 720, 720);
-    CELL = Math.max(32, Math.min(48, Math.floor(
-      (availableWidth - GAP * (SIZE - 1) - PAD * 2 - 4) / SIZE
-    )));
+    function fitCellSize() {
+      const styles = getComputedStyle(container);
+      const availableWidth = Math.min(720, container.clientWidth -
+        parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight));
+      return Math.max(28, Math.min(48, Math.floor(
+        (availableWidth - GAP * (SIZE - 1) - PAD * 2 - 4) / SIZE
+      )));
+    }
+    CELL = fitCellSize();
     let tiles = [];       // { id, value, row, col, isNew, justMerged }
     let nextId = 1;
     const domMap = new Map();
@@ -109,7 +114,7 @@
 
     // ---------- UI ----------
     const root = document.createElement('div');
-    root.style.cssText = 'display:flex;flex-direction:column;align-items:center;';
+    root.style.cssText = 'display:flex;flex-direction:column;align-items:center;width:100%;';
 
     const bar = document.createElement('div');
     bar.className = 'game-toolbar';
@@ -137,11 +142,11 @@
     root.appendChild(bar);
 
     const boardEl = document.createElement('div');
-    const boardSize = SIZE * CELL + (SIZE - 1) * GAP + PAD * 2 + 4;
+    function boardSize() { return SIZE * CELL + (SIZE - 1) * GAP + PAD * 2 + 4; }
     boardEl.style.cssText =
       'position:relative;display:grid;grid-template-columns:repeat(' + SIZE + ',' + CELL + 'px);' +
-      'gap:' + GAP + 'px;padding:' + PAD + 'px;width:' + boardSize + 'px;height:' + boardSize + 'px;' +
-      'box-sizing:border-box;background:var(--board-bg);border:2px dashed var(--text);border-radius:12px;';
+      'gap:' + GAP + 'px;padding:' + PAD + 'px;width:' + boardSize() + 'px;height:' + boardSize() + 'px;' +
+      'max-width:100%;box-sizing:border-box;background:var(--board-bg);border:2px dashed var(--text);border-radius:12px;';
     const gridEl = document.createElement('div');
     gridEl.style.cssText =
       'position:absolute;left:' + PAD + 'px;top:' + PAD + 'px;display:grid;' +
@@ -175,6 +180,29 @@
     const animSel = bar.querySelector('#hs-anim');
 
     function animMs() { return ANIM_MS[animSpeed]; }
+
+    function onResize() {
+      const fittedSize = fitCellSize();
+      if (fittedSize === CELL) return;
+      CELL = fittedSize;
+      boardEl.style.width = boardSize() + 'px';
+      boardEl.style.height = boardSize() + 'px';
+      boardEl.style.gridTemplateColumns = 'repeat(' + SIZE + ',' + CELL + 'px)';
+      gridEl.style.gridTemplateColumns = 'repeat(' + SIZE + ',' + CELL + 'px)';
+      gridEl.style.gridTemplateRows = 'repeat(' + SIZE + ',' + CELL + 'px)';
+      gridEl.querySelectorAll('div').forEach(cell => {
+        cell.style.width = CELL + 'px';
+        cell.style.height = CELL + 'px';
+      });
+      for (const tile of tiles) {
+        const el = domMap.get(tile.id);
+        if (el) {
+          el.style.width = CELL + 'px';
+          el.style.height = CELL + 'px';
+        }
+      }
+      renderTiles();
+    }
 
     // ---------- 方块辅助 ----------
     function tileAt(r, c) {
@@ -500,11 +528,13 @@
       newGame();
     });
     animSel.addEventListener('change', () => { animSpeed = animSel.value; });
+    window.addEventListener('resize', onResize);
 
     newGame();
 
     return function cleanup() {
       window.removeEventListener('gamehub-theme-change', onThemeChange);
+      window.removeEventListener('resize', onResize);
     };
   }
 

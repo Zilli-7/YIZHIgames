@@ -1,6 +1,6 @@
 # 益智游戏馆：云账号、跨设备同步与全站排行榜
 
-本项目本身是静态网页，不需要自己租用或运行 Node.js 后端。Supabase 提供账号认证和 PostgreSQL 数据库，静态托管平台负责把网页发布到公网。
+本项目本身是静态网页，不需要自己租用或运行 Node.js 后端。Supabase 提供账号认证和 PostgreSQL 数据库，静态托管平台负责把网页发布到公网。Supabase 浏览器 SDK 已随项目放在 `js/vendor/supabase.js`，无需依赖访问第三方 CDN。
 
 配置完成后的效果：
 
@@ -93,6 +93,7 @@ Supabase 项目提供认证与数据库。公开网站可以由 Cloudflare Pages
 - **其他静态主机**：将项目目录中的网页文件原样上传，并启用 HTTPS。
 
 这是纯静态站点，不需要构建命令；如果平台要求填写，构建命令留空，发布目录填项目根目录（或平台仓库中 `puzzle-games` 的相对路径）。网站应使用 HTTPS。不要把 `file://` 本地文件路径当成正式网址。
+部署时请确保同时上传 `js/vendor/supabase.js` 和 `js/vendor/SUPABASE-LICENSE.txt`。这两个文件让登录 SDK 由你的网站同源提供，减少移动网络或内置浏览器无法访问第三方 CDN 的问题。
 
 ### 设置 Supabase 网站 URL
 
@@ -138,9 +139,7 @@ Supabase 项目提供认证与数据库。公开网站可以由 Cloudflare Pages
 
 ### 登录或排行榜提示缺少 Supabase SDK
 
-页面从 jsDelivr 加载 Supabase 浏览器 SDK。若网络、证书、广告拦截器或组织网络策略阻止访问 CDN，浏览器会出现 `ERR_CERT_AUTHORITY_INVALID` 或脚本加载错误，云功能无法连接。
-
-确认访问 `https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2` 正常，检查系统/代理证书和浏览器控制台。生产环境也可把 Supabase SDK 固定到明确版本，并随网站部署本地文件；升级版本时需重新测试。不要通过关闭浏览器证书验证来规避问题。
+确认线上地址 `https://你的网站/js/vendor/supabase.js` 能打开，且 Cloudflare Pages 部署文件清单中包含该文件。随后强制刷新或用无痕窗口重新加载。页面会区分“尚未配置 URL/key”和“本地 SDK 未加载”，可据提示定位。不要通过关闭浏览器证书验证来规避网络问题。
 
 ### 提交成绩时报错或排行榜为空
 

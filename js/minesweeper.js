@@ -17,6 +17,8 @@
       board: [],        // -1 = mine, 0-8 = count
       revealed: [],     // boolean
       flagged: [],      // boolean
+      cellSize: 34,
+      flagMode: false,
       firstClick: true,
       gameOver: false,
       won: false,
@@ -44,16 +46,30 @@
         '<input id="ms-mine-count" type="number" min="1" max="500" value="20" style="width:70px;" title="雷数">' +
         '<button class="btn btn-sm" id="ms-apply-custom" type="button">应用</button>' +
       '</div>' +
-      '<div id="ms-board" style="display:inline-grid;gap:1px;padding:8px;border:2px dashed var(--text);border-radius:8px;user-select:none;"></div>' +
-      '<div class="hint-text">左键翻开 · 右键插旗 🚩（可再次右键取消）</div>';
+      '<div class="minesweeper-actions">' +
+        '<div class="hint-text">点按翻开</div>' +
+        '<button class="btn btn-sm" id="ms-flag-mode" type="button" aria-pressed="false">🚩 插旗模式：关</button>' +
+      '</div>' +
+      '<div id="ms-board-wrap" style="display:flex;width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;">' +
+        '<div id="ms-board" style="display:grid;gap:1px;width:max-content;padding:8px;border:2px dashed var(--text);border-radius:8px;user-select:none;touch-action:manipulation;"></div>' +
+      '</div>' +
+      '<div class="hint-text">右键或长按插旗；开启插旗模式后点按棋盘切换旗帜。</div>';
 
     container.appendChild(root);
 
     const levelSel = root.querySelector('#ms-level');
     const customBox = root.querySelector('#ms-custom');
     const boardEl = root.querySelector('#ms-board');
+    const boardWrap = root.querySelector('#ms-board-wrap');
     const minesEl = root.querySelector('#ms-mines');
     const timeEl = root.querySelector('#ms-time');
+    const flagModeBtn = root.querySelector('#ms-flag-mode');
+
+    function fitCellSize() {
+      const availableWidth = boardWrap.clientWidth;
+      return Math.max(16, Math.min(34,
+        Math.floor((availableWidth - 20 - (state.cols - 1)) / state.cols)));
+    }
 
     function stopTimer() { if (state.timer) { clearInterval(state.timer); state.timer = null; } }
     function startTimer() {
@@ -70,6 +86,7 @@
       state.firstClick = true;
       state.gameOver = false;
       state.won = false;
+      state.flagMode = false;
       state.seconds = 0;
       timeEl.textContent = '0';
       state.board = [];
@@ -80,9 +97,11 @@
         state.revealed.push(new Array(cols).fill(false));
         state.flagged.push(new Array(cols).fill(false));
       }
+      state.cellSize = fitCellSize();
       // 初始不布雷，首点后再布雷，保证首点安全
-      boardEl.style.gridTemplateColumns = 'repeat(' + cols + ', ' + Math.min(34, Math.floor(720 / cols)) + 'px)';
       render();
+      boardWrap.scrollLeft = 0;
+      requestAnimationFrame(onResize);
       updateMineCount();
     }
 
@@ -194,7 +213,7 @@
       for (let r = 0; r < state.rows; r++) {
         for (let c = 0; c < state.cols; c++) {
           const cell = document.createElement('div');
-          const sz = Math.min(34, Math.floor(720 / state.cols));
+          const sz = state.cellSize;
           cell.style.cssText =
             'width:' + sz + 'px;height:' + sz + 'px;display:flex;align-items:center;justify-content:center;' +
             'font-size:' + Math.max(13, sz * 0.55) + 'px;font-weight:600;cursor:pointer;' +
@@ -212,11 +231,51 @@
           } else if (state.flagged[r][c]) {
             cell.textContent = '🚩';
           }
-          cell.addEventListener('click', () => reveal(r, c));
-          cell.addEventListener('contextmenu', (e) => { e.preventDefault(); toggleFlag(r, c); });
+          let longPressTimer = null;
+          let longPressed = false;
+          cell.addEventListener('pointerdown', e => {
+            if (e.pointerType !== 'touch') return;
+            longPressed = false;
+            longPressTimer = setTimeout(() => {
+              longPressed = true;
+              toggleFlag(r, c);
+            }, 450);
+          });
+          const cancelLongPress = () => {
+            if (longPressTimer) clearTimeout(longPressTimer);
+            longPressTimer = null;
+          };
+          cell.addEventListener('pointerup', cancelLongPress);
+          cell.addEventListener('pointercancel', cancelLongPress);
+          cell.addEventListener('click', () => {
+            if (longPressed) return;
+            if (state.flagMode) toggleFlag(r, c);
+            else reveal(r, c);
+          });
+          cell.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (!longPressed) toggleFlag(r, c);
+          });
           boardEl.appendChild(cell);
         }
       }
+      const size = state.cellSize;
+      boardEl.style.gridTemplateColumns = 'repeat(' + state.cols + ', ' + size + 'px)';
+      const boardWidth = state.cols * size + state.cols - 1 + 20;
+      boardWrap.style.justifyContent = boardWidth <= boardWrap.clientWidth ? 'center' : 'flex-start';
+      flagModeBtn.textContent = state.flagMode ? '🚩 插旗模式：开' : '🚩 插旗模式：关';
+      flagModeBtn.setAttribute('aria-pressed', String(state.flagMode));
+      boardEl.querySelectorAll(':scope > div').forEach(cell => {
+        cell.style.width = size + 'px';
+        cell.style.height = size + 'px';
+      });
+    }
+
+    function onResize() {
+      const fittedSize = fitCellSize();
+      if (fittedSize === state.cellSize) return;
+      state.cellSize = fittedSize;
+      render();
     }
 
     function restart() {
@@ -233,10 +292,19 @@
     });
     root.querySelector('#ms-restart').addEventListener('click', restart);
     root.querySelector('#ms-apply-custom').addEventListener('click', restart);
+    flagModeBtn.addEventListener('click', () => {
+      state.flagMode = !state.flagMode;
+      flagModeBtn.textContent = state.flagMode ? '🚩 插旗模式：开' : '🚩 插旗模式：关';
+      flagModeBtn.setAttribute('aria-pressed', String(state.flagMode));
+    });
+    window.addEventListener('resize', onResize);
 
     initBoard(9, 9, 10);
 
-    return function cleanup() { stopTimer(); };
+    return function cleanup() {
+      stopTimer();
+      window.removeEventListener('resize', onResize);
+    };
   }
 
   GameHub.register({
@@ -247,7 +315,7 @@
     badge: '逻辑',
     rules: [
       '翻开所有没有地雷的格子即可获胜；点中地雷则游戏结束。',
-      '左键翻开格子，右键插旗标记地雷；再次右键可取消旗帜。',
+      '点按翻开格子，右键或长按插旗标记地雷；再次右键或长按可取消旗帜。',
       '格子上的数字表示其周围八个方向的地雷数量；翻开无数字的空格时会自动展开邻近区域。',
       '首个翻开的格子保证安全；可选择难度或设置自定义棋盘。'
     ],

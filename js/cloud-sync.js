@@ -123,7 +123,10 @@
 
   function requireClient() {
     if (!client) {
-      throw new Error('云服务未配置。请先在 js/cloud-config.js 填入 Supabase URL 和 anon key。');
+      if (!config.url || !config.anonKey) {
+        throw new Error('云服务未配置。请在 js/cloud-config.js 填入 Supabase URL 和 publishable key。');
+      }
+      throw new Error('Supabase SDK 未加载。请确认 js/vendor/supabase.js 已部署并重新加载页面。');
     }
     return client;
   }
@@ -269,7 +272,11 @@
     }
   });
 
-  if (config.url && config.anonKey && window.supabase && window.supabase.createClient) {
+  if (!config.url || !config.anonKey) {
+    setStatus('云服务尚未配置 · 请填写 Supabase URL 和 publishable key');
+  } else if (!window.supabase || !window.supabase.createClient) {
+    setStatus('Supabase SDK 未加载 · 请检查 js/vendor/supabase.js 是否部署');
+  } else {
     client = window.supabase.createClient(config.url, config.anonKey);
     configured = true;
     setStatus('正在连接云服务…');
@@ -283,8 +290,6 @@
     client.auth.onAuthStateChange((_event, session) => {
       window.setTimeout(() => updateSession(session ? session.user : null), 0);
     });
-  } else {
-    setStatus('游戏记录保存在本地浏览器 · 云同步尚未配置');
   }
 
   window.CloudSync = {

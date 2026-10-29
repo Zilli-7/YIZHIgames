@@ -166,3 +166,45 @@ Supabase 项目提供认证与数据库。公开网站可以由 Cloudflare Pages
 所有访问者都能读取公开榜单，所以昵称会公开显示。成绩表不公开邮箱、手机号或用户 ID。请用户不要在昵称中输入真实姓名、电话号码等隐私信息。
 
 数据库会拒绝匿名写入，并限制登录用户只能通过安全函数提交自己的有限范围整数成绩；但浏览器中的游戏和分数仍由用户设备运行，技术熟练的用户仍可能伪造合理范围内的成绩。此实现适合普通休闲游戏，不是竞技反作弊系统。若需要可信赛事榜单，应把关键游戏状态/计分放到服务端验证，并加上速率限制、重复提交检测和人工审核流程。
+
+## 十一、海龟汤 AI 主持人（DeepSeek，可选）
+
+海龟汤默认使用本地关键词规则回答；可接入 DeepSeek 大模型实现真正的智能问答。接入方式是加一个 Cloudflare Worker 代理：API 密钥始终藏在 Worker 环境变量里，绝不进入网页；站点默认给每位访客每日限量额度，访客也可粘贴自己的 DeepSeek Key 不限次提问（BYOK）。
+
+### 1. 部署代理 Worker
+
+1. 在 Cloudflare 控制台创建一个 Worker，把 `workers/ai-proxy.js` 的内容粘贴进去。
+2. 在 Worker 的 **Settings → Variables and Secrets** 添加环境变量：
+   - `AI_API_KEY`：你的 DeepSeek API Key（`sk-…`）。
+   - `AI_BASE_URL`：`https://api.deepseek.com`
+   - `AI_MODEL`：`deepseek-flash`（低成本 Flash 档；`flash0731` 对应的 DeepSeek-V4-Flash-0731 已退役，现由 `deepseek-flash` 即 V4.1-Flash 承接）。
+   - `DAILY_LIMIT`：站点密钥模式每 IP 每日提问上限，例如 `50`。
+3. 绑定一个 KV 命名空间，绑定名 `LIMITER`（用于按 IP 限流）。
+4. 保存并部署，记下 Worker 地址，例如 `https://你的-worker.workers.dev`。
+
+### 2. 填写前端配置
+
+打开 `js/ai-config.js`，把 `endpoint` 改成 Worker 地址（保留 `/ai` 后缀）：
+
+```js
+window.AI_CONFIG = {
+  endpoint: 'https://你的-worker.workers.dev/ai',
+  defaultModel: 'deepseek-flash'
+};
+```
+
+保存并重新部署网页。进入海龟汤，点「🤖 AI 设置」可查看状态、开关 AI，或粘贴自带 Key。
+
+### 3. 计费与省钱要点
+
+- DeepSeek 官方 API 为按量付费，`deepseek-flash` 是低成本档；海龟汤每轮问答 token 很少，单问约几厘钱。
+- 站点密钥模式靠 `DAILY_LIMIT` 限制每位访客每日提问次数，预算基本可控。
+- 用户自带 Key（BYOK）时站点不付费；密钥只存浏览器 localStorage，经 Worker 转发，不落库、不记日志。
+- `AI_API_KEY` 是付费密钥，绝不能写进 `js/` 或提交到 Git；只放 Worker 环境变量。若曾泄露，请在 DeepSeek 控制台重新生成。
+
+### 4. 常见问题
+
+- **AI 未配置**：`js/ai-config.js` 的 `endpoint` 仍是占位地址（含「你的-worker」字样）时，会判定为未配置。
+- **今日额度已用完**：站点密钥模式触发了 `DAILY_LIMIT`；可在设置里粘贴自己的 Key 继续。
+- **网络错误/无法连接 AI**：检查 Worker 地址是否可访问、环境变量是否填对、KV 绑定名是否为 `LIMITER`。
+- **模型名报错**：确认 `AI_MODEL` 用的是 DeepSeek 控制台当前可用的模型名（`deepseek-flash` 或 `deepseek-v4-pro`）。

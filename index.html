@@ -127,6 +127,7 @@
       <select id="leaderboard-game">
         <option value="snake">贪吃蛇</option>
         <option value="heshu">合数</option>
+        <option value="heshu-items">合数·道具版</option>
         <option value="game2048-4">2048 · 4×4</option>
         <option value="game2048-5">2048 · 5×5</option>
         <option value="game2048-6">2048 · 6×6</option>
@@ -135,13 +136,36 @@
     </div>
     <p class="dialog-message" id="leaderboard-message" role="status" aria-live="polite"></p>
     <ol class="leaderboard-list" id="leaderboard-list"></ol>
-    <p class="dialog-hint">当前榜单收录贪吃蛇、合数和 2048；其他游戏暂未定义可比的积分规则。</p>
+    <p class="dialog-hint">当前榜单收录贪吃蛇、合数、合数道具版和 2048；其他游戏暂未定义可比的积分规则。</p>
+  </dialog>
+
+  <dialog class="app-dialog" id="ai-dialog" aria-labelledby="ai-title">
+    <div class="dialog-heading">
+      <h2 id="ai-title">🤖 海龟汤 AI 主持人</h2>
+      <button class="btn btn-ghost btn-sm" type="button" data-close-dialog="ai-dialog" aria-label="关闭">✕</button>
+    </div>
+    <p class="dialog-hint">AI 由 DeepSeek 驱动，用于「海龟汤」的智能问答。默认使用站点免费额度；粘贴你自己的 DeepSeek API Key 即可不限次提问（密钥仅保存在你的浏览器）。</p>
+    <form id="ai-form" class="auth-form">
+      <label style="display:flex;align-items:center;gap:8px;margin:10px 0;cursor:pointer;">
+        <input id="ai-toggle" type="checkbox" checked>
+        <span>启用 AI 主持人（关闭后回退到本地规则）</span>
+      </label>
+      <label>自带 API Key（可选）<input id="ai-key" type="password" placeholder="粘贴 DeepSeek API Key，形如 sk-…" autocomplete="off"></label>
+      <div class="dialog-actions">
+        <button class="btn btn-primary" type="button" id="ai-save">保存</button>
+        <button class="btn" type="button" id="ai-clear">清除密钥</button>
+      </div>
+    </form>
+    <p class="dialog-message" id="ai-message" role="status" aria-live="polite"></p>
+    <p class="dialog-hint" id="ai-status-line">当前：未配置 AI</p>
   </dialog>
 
   <script src="js/cloud-config.js"></script>
   <script src="js/vendor/supabase.js"></script>
   <script src="js/main.js"></script>
   <script src="js/cloud-sync.js"></script>
+  <script src="js/ai-config.js"></script>
+  <script src="js/ai-host.js"></script>
   <script src="js/puzzles-a.js"></script>
   <script src="js/puzzles-b.js"></script>
   <script src="js/puzzles-c.js"></script>

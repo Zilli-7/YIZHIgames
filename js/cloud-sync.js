@@ -18,6 +18,7 @@
   const games = {
     snake: { label: '贪吃蛇', key: 'snake-score' },
     heshu: { label: '合数', key: 'heshu-score' },
+    'heshu-items': { label: '合数·道具版', key: 'heshu-items-score' },
     'game2048-4': { label: '2048 · 4×4', key: 'g2048-score-4' },
     'game2048-5': { label: '2048 · 5×5', key: 'g2048-score-5' },
     'game2048-6': { label: '2048 · 6×6', key: 'g2048-score-6' }

@@ -1,16 +1,19 @@
 /**
- * 合数 —— 6×6 合并消消乐（方块对象 + 绝对定位，支持动画）
+ * 合数道具版 —— 6×6 合并消消乐（方块对象 + 绝对定位，支持动画）
  * 规则：
  *  - 初始数字范围 1~6；点击方块使其 +1。
  *  - 仅当点击方块所在的上下左右连通同值方块达到 3 个时，合并为更大数字。
  *  - 合并结果留在点击位置；各列上方方块下落，列顶空位再补入随机数字。
- *  - 每次点击消耗 1 步，自动连锁合并返还步数。
+ *  - 每局初始 4 步；每组自动连锁合并返还 1 步，步数不设上限。
+ *  - 道具消耗金币：+1 / 打乱 / 敲除 50 金币，-1 100 金币。
  * 动画：逐步展示数字升级、合并、下落和列顶补块，速度可调。
  * 配色：数字块使用当前主题色卡，并按数值映射到不同明暗层级。
  */
 (function () {
   const SIZE = 6;
-  const DIFFICULTY_STEPS = { hard: 5, easy: 15, medium: 10 };
+  const INITIAL_STEPS = 4;
+  const TOOL_COSTS = { plus: 50, minus: 100, shuffle: 50, remove: 50 };
+  const COINS_KEY = 'heshu-items-coins';
   let CELL = 48;
   const GAP = 6, PAD = 14;
 
@@ -102,15 +105,24 @@
     let tiles = [];       // { id, value, row, col, isNew, justMerged }
     let nextId = 1;
     const domMap = new Map();
-    let stepLimit = DIFFICULTY_STEPS.medium;
-    let steps = stepLimit;
+    let steps = INITIAL_STEPS;
     let score = 0;
-    let bestScore = GameHub.loadBest('heshu-score');
+    let bestScore = GameHub.loadBest('heshu-items-score');
+    let coins = 0;
     let gameOver = false;
     let animating = false;
     let queuedClicks = [];
     let turnId = 0;
     let animSpeed = 'medium';
+    let selectedTool = null;
+    let settled = false;
+
+    try {
+      const savedCoins = Number.parseInt(localStorage.getItem(COINS_KEY), 10);
+      coins = Number.isFinite(savedCoins) && savedCoins > 0 ? savedCoins : 0;
+    } catch (error) {
+      console.warn('无法读取合数道具版金币：', error);
+    }
 
     // ---------- UI ----------
     const root = document.createElement('div');
@@ -120,16 +132,10 @@
     bar.className = 'game-toolbar';
     bar.style.cssText = 'width:100%;justify-content:center;';
     bar.innerHTML =
-      '<span class="stat">👣 步数 <b id="hs-steps">' + stepLimit + '</b></span>' +
-      '<label class="stat" style="display:flex;align-items:center;gap:4px;">难度' +
-        '<select id="hs-difficulty" style="padding:4px 8px;">' +
-          '<option value="easy">易 · 15 步</option>' +
-          '<option value="medium" selected>中 · 10 步</option>' +
-          '<option value="hard">难 · 5 步</option>' +
-        '</select>' +
-      '</label>' +
+      '<span class="stat">👣 步数 <b id="hs-steps">' + INITIAL_STEPS + '</b></span>' +
+      '<span class="stat">🪙 金币 <b id="hs-coins">' + coins + '</b></span>' +
       '<span class="stat">🏆 分数 <b id="hs-score">0</b></span>' +
-      '<span class="stat">🔝 最高分 <b id="hs-max">' + bestScore + '</b></span>' +
+      '<span class="stat">🔝 道具版最高分 <b id="hs-max">' + bestScore + '</b></span>' +
       '<label class="stat" style="display:flex;align-items:center;gap:4px;">🎞 动画' +
         '<select id="hs-anim" style="padding:4px 8px;">' +
           '<option value="off">关闭</option>' +
@@ -140,6 +146,17 @@
       '</label>' +
       '<button class="btn btn-sm btn-primary" id="hs-new" type="button">新游戏</button>';
     root.appendChild(bar);
+
+    const tools = document.createElement('div');
+    tools.className = 'heshu-tools game-toolbar';
+    tools.style.cssText = 'width:100%;justify-content:center;';
+    tools.innerHTML =
+      '<span class="stat">道具（每次操作消耗 1 步）</span>' +
+      '<button class="btn btn-sm" type="button" data-tool="plus">+1 · 50 金币</button>' +
+      '<button class="btn btn-sm" type="button" data-tool="minus">-1 · 100 金币</button>' +
+      '<button class="btn btn-sm" type="button" data-tool="shuffle">打乱重排 · 50 金币</button>' +
+      '<button class="btn btn-sm" type="button" data-tool="remove">敲除 · 50 金币</button>';
+    root.appendChild(tools);
 
     const boardEl = document.createElement('div');
     function boardSize() { return SIZE * CELL + (SIZE - 1) * GAP + PAD * 2 + 4; }
@@ -163,7 +180,7 @@
     const hint = document.createElement('div');
     hint.className = 'hint-text';
     hint.style.textAlign = 'center';
-    hint.textContent = '点击方块使数字 +1；相邻同值方块连成 3 个及以上时合并升级，上方方块下落，顶部空位补入新数字。';
+    hint.textContent = '点击数字消耗 1 步并使其 +1；选择道具后点选目标数字。自动合并每组返还 1 步，步数上限 4。';
     root.appendChild(hint);
 
     const msgEl = document.createElement('div');
@@ -174,9 +191,9 @@
     container.appendChild(root);
 
     const stepsEl = bar.querySelector('#hs-steps');
+    const coinsEl = bar.querySelector('#hs-coins');
     const scoreEl = bar.querySelector('#hs-score');
     const maxEl = bar.querySelector('#hs-max');
-    const difficultySel = bar.querySelector('#hs-difficulty');
     const animSel = bar.querySelector('#hs-anim');
 
     function animMs() { return ANIM_MS[animSpeed]; }
@@ -398,10 +415,10 @@
       stepsEl.textContent = steps;
       scoreEl.textContent = score;
       if (score > bestScore) {
-        GameHub.saveBest('heshu-score', score);
-        bestScore = score;
+        maxEl.textContent = score;
+      } else {
+        maxEl.textContent = bestScore;
       }
-      maxEl.textContent = bestScore;
     }
 
     // ---------- 游戏流程 ----------
@@ -409,10 +426,43 @@
       return dur > 0 ? new Promise(resolve => setTimeout(resolve, dur + 24)) : Promise.resolve();
     }
 
+    function saveCoins(value) {
+      try {
+        localStorage.setItem(COINS_KEY, String(value));
+      } catch (error) {
+        console.error('保存合数道具版金币失败：', error);
+        msgEl.textContent = '金币保存失败，请检查浏览器存储空间后重试。';
+        msgEl.className = 'msg danger';
+        return false;
+      }
+      coins = value;
+      coinsEl.textContent = coins;
+      return true;
+    }
+
+    function selectTool(tool) {
+      selectedTool = selectedTool === tool ? null : tool;
+      tools.querySelectorAll('[data-tool]').forEach(button => {
+        const selected = button.dataset.tool === selectedTool;
+        button.classList.toggle('btn-primary', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+      if (selectedTool) {
+        const labels = { plus: '+1', minus: '-1', remove: '敲除' };
+        msgEl.textContent = '已选择 ' + labels[selectedTool] + ' 道具，请点击一个数字使用。';
+        msgEl.className = 'msg';
+      }
+    }
+
     function newGame() {
       turnId++;
       animating = false;
       queuedClicks = [];
+      selectedTool = null;
+      tools.querySelectorAll('[data-tool]').forEach(button => {
+        button.classList.remove('btn-primary');
+        button.setAttribute('aria-pressed', 'false');
+      });
       tiles = [];
       nextId = 1;
       domMap.forEach(el => el.remove());
@@ -431,47 +481,36 @@
         clean = tiles.every(t => findGroup(t).length < 3);
       }
 
-      steps = stepLimit;
+      steps = INITIAL_STEPS;
       score = 0;
       gameOver = false;
+      settled = false;
       msgEl.textContent = '';
       msgEl.className = 'msg';
       renderTiles();
     }
 
-    async function onTileClick(tile) {
+    function enqueueAction(action) {
       if (gameOver) return;
-      if (!tiles.includes(tile)) return;
-      if (animating) {
-        queuedClicks.push({ row: tile.row, col: tile.col });
-        return;
-      }
+      queuedClicks.push(action);
+      if (!animating) void processActionQueue();
+    }
 
-      const dur = animMs();
-      animating = true;
-      const currentTurn = ++turnId;
-
-      tile.value += 1;
-      steps = Math.max(0, steps - 1);
-      renderTiles();
-      await waitForAnimation(dur);
-      if (currentTurn !== turnId) return;
-
+    async function resolveBoard(currentTurn, directTile) {
       let direct = false;
       let chains = 0;
-
-      // 每轮先展示合并，再展示下落和补数，最后扫描新棋盘以触发连锁。
       for (let guard = 0; guard < 500; guard++) {
-        if (currentTurn !== turnId) return;
+        if (currentTurn !== turnId) return { direct, chains };
         const groups = findGroups();
         if (groups.length === 0) break;
 
         for (const group of groups) {
-          const target = group.includes(tile) ? tile : group[0];
-          if (target === tile && !direct) direct = true;
+          const isDirect = directTile && !direct && group.includes(directTile);
+          const target = isDirect ? directTile : group[0];
+          if (isDirect) direct = true;
           else {
             chains++;
-            steps = Math.min(stepLimit, steps + 1);
+            steps += 1;
           }
 
           const mergedValue = target.value + 1;
@@ -485,48 +524,141 @@
           target.justMerged = true;
         }
         renderTiles();
-        await waitForAnimation(dur);
-        if (currentTurn !== turnId) return;
+        await waitForAnimation(animMs());
+        if (currentTurn !== turnId) return { direct, chains };
 
         applyGravity();
         refillTop();
         renderTiles();
+        await waitForAnimation(animMs());
+      }
+      return { direct, chains };
+    }
+
+    function finishGame() {
+      if (settled) return;
+      settled = true;
+      steps = 0;
+      gameOver = true;
+      const earned = Math.floor(score / 50);
+      const payoutSaved = saveCoins(coins + earned);
+      const isNew = GameHub.saveBest('heshu-items-score', score);
+      bestScore = Math.max(bestScore, score);
+      maxEl.textContent = bestScore;
+      msgEl.textContent = '💥 步数耗尽！得分 ' + score +
+        '，结算获得 ' + earned + ' 金币' + (payoutSaved ? '' : '（金币保存失败）') +
+        (isNew ? ' · 道具版新纪录！' : '');
+      msgEl.className = 'msg danger';
+    }
+
+    async function performAction(action, currentTurn) {
+      const dur = animMs();
+      if (steps <= 0) return;
+      let target = action.tileId
+        ? tiles.find(tile => tile.id === action.tileId)
+        : null;
+      if (action.kind === 'tile' && !target) return;
+
+      if (action.kind === 'tile' && action.tool) {
+        if (action.tool === 'minus' && target.value <= 1) {
+          msgEl.textContent = '数字最小为 1，无法使用 -1 道具。';
+          msgEl.className = 'msg warn';
+          return;
+        }
+        const cost = TOOL_COSTS[action.tool];
+        if (coins < cost) {
+          msgEl.textContent = '金币不足：该道具需要 ' + cost + ' 金币。';
+          msgEl.className = 'msg warn';
+          return;
+        }
+        if (!saveCoins(coins - cost)) return;
+      } else if (action.kind === 'shuffle') {
+        const cost = TOOL_COSTS.shuffle;
+        if (coins < cost) {
+          msgEl.textContent = '金币不足：该道具需要 ' + cost + ' 金币。';
+          msgEl.className = 'msg warn';
+          return;
+        }
+        if (!saveCoins(coins - cost)) return;
+      }
+
+      steps = Math.max(0, steps - 1);
+      let directTile = null;
+      const autoAction = action.kind === 'shuffle' || Boolean(action.tool);
+
+      if (action.kind === 'tile' && action.tool === 'remove') {
+        tiles.splice(tiles.indexOf(target), 1);
+        renderTiles();
         await waitForAnimation(dur);
+        if (currentTurn !== turnId) return;
+        applyGravity();
+        refillTop();
+      } else if (action.kind === 'tile') {
+        if (action.tool === 'minus') target.value -= 1;
+        else target.value += 1;
+        target.justMerged = Boolean(action.tool);
+        if (!action.tool) directTile = target;
+      } else if (action.kind === 'shuffle') {
+        const positions = shuffle(tiles.map(tile => ({ row: tile.row, col: tile.col })));
+        tiles.forEach((tile, index) => {
+          tile.row = positions[index].row;
+          tile.col = positions[index].col;
+        });
       }
 
       if (currentTurn !== turnId) return;
+      renderTiles();
+      await waitForAnimation(dur);
+      if (currentTurn !== turnId) return;
+      const { direct, chains } = await resolveBoard(currentTurn, autoAction ? null : directTile);
+      if (currentTurn !== turnId) return;
 
       if (steps <= 0) {
-        steps = 0;
-        gameOver = true;
-        const best = GameHub.loadBest('heshu-score');
-        const isNew = GameHub.saveBest('heshu-score', score);
-        msgEl.textContent = '💥 步数耗尽，游戏结束！得分 ' + score + (isNew ? ' 🎉 新纪录！' : (best ? '（最高 ' + best + '）' : ''));
-        msgEl.className = 'msg danger';
+        finishGame();
       } else {
         msgEl.textContent = direct
           ? (chains ? '✨ 直接合并 + 连锁 ' + chains + ' 次，补步数！' : '✅ 合并成功')
-          : '❌ 未合并，步数 -1';
-        msgEl.className = 'msg ' + (direct ? 'ok' : 'warn');
+          : chains ? '✨ 自动连锁 ' + chains + ' 次，补步数！'
+            : action.kind === 'shuffle' ? '🔀 已重新排布，没有触发合并。'
+              : autoAction ? '✅ 道具使用成功，没有触发合并。'
+                : '❌ 未合并，步数 -1';
+        msgEl.className = 'msg ' + (direct || chains ? 'ok' : 'warn');
       }
-
-      animating = false;
-      if (gameOver) {
-        queuedClicks = [];
-        return;
-      }
-      const nextClick = queuedClicks.shift();
-      if (nextClick) {
-        const nextTile = tileAt(nextClick.row, nextClick.col);
-        if (nextTile) void onTileClick(nextTile);
-      }
+      renderTiles();
     }
 
-    root.querySelector('#hs-new').addEventListener('click', newGame);
-    difficultySel.addEventListener('change', () => {
-      stepLimit = DIFFICULTY_STEPS[difficultySel.value];
-      newGame();
+    async function processActionQueue() {
+      if (animating || gameOver) return;
+      const action = queuedClicks.shift();
+      if (!action) return;
+      animating = true;
+      const currentTurn = ++turnId;
+      await performAction(action, currentTurn);
+      if (currentTurn !== turnId) return;
+      animating = false;
+      if (gameOver) queuedClicks = [];
+      else if (queuedClicks.length) void processActionQueue();
+    }
+
+    function onTileClick(tile) {
+      const tool = selectedTool;
+      if (tool) selectTool(tool);
+      enqueueAction({ kind: 'tile', tileId: tile.id, tool });
+    }
+
+    tools.addEventListener('click', event => {
+      const button = event.target.closest('[data-tool]');
+      if (!button) return;
+      const tool = button.dataset.tool;
+      if (tool === 'shuffle') {
+        selectTool(null);
+        enqueueAction({ kind: 'shuffle' });
+      } else {
+        selectTool(tool);
+      }
     });
+
+    root.querySelector('#hs-new').addEventListener('click', newGame);
     animSel.addEventListener('change', () => { animSpeed = animSel.value; });
     window.addEventListener('resize', onResize);
 
@@ -539,16 +671,17 @@
   }
 
   GameHub.register({
-    id: 'heshu',
-    title: '合数',
+    id: 'heshu-items',
+    title: '合数·道具版',
     icon: '🧩',
-    desc: '6×6 合并消消乐：点击升级数字，合并后下落补位并触发连锁',
-    badge: '合并',
+    desc: '6×6 道具合并消消乐：使用金币道具操作，自动连锁合并',
+    badge: '道具版',
     rules: [
-      '棋盘为 6×6，点击任意方块可使它的数字加 1。',
-      '若点击方块与上下左右连通的同值方块达到 3 个或以上，它们会合并升级，结果留在点击位置。',
-      '合并后上方方块下落，顶部补入随机数字；补充后扫描全盘，所有新形成的 3 个及以上连通同值方块都会自动合并。',
-      '难度分为难（5 步）、易（15 步）、中（10 步）；每次点击消耗 1 步，每组自动连锁合并返还 1 步，步数不超过所选难度上限。步数耗尽时游戏结束，尽可能提高分数。'
+      '棋盘为 6×6，每局初始 4 步。普通点击使数字 +1；每次普通操作或道具操作消耗 1 步。',
+      '+1（50 金币）、-1（100 金币）和敲除（50 金币）需先选择道具，再点击目标数字；数字最小为 1。',
+      '打乱重排（50 金币）会重新排列棋盘上现有方块，不新增数字。敲除后本列上方方块下落，再从顶部补入新数字。',
+      '每次棋盘改变后扫描全盘；所有 3 个及以上上下左右连通的同值方块自动合并升级，下落补位后继续连锁。每组自动合并返还 1 步，步数不设上限。',
+      '游戏结束时按 50 分兑换 1 金币结算并累积金币（不足 50 分部分不兑换）。金币保存在当前浏览器。'
     ],
     init
   });

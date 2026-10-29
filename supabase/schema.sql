@@ -1,6 +1,6 @@
 create table if not exists public.game_scores (
   user_id uuid not null references auth.users (id) on delete cascade,
-  game_id text not null check (game_id in ('snake', 'heshu', 'game2048-4', 'game2048-5', 'game2048-6')),
+  game_id text not null check (game_id in ('snake', 'heshu', 'heshu-items', 'game2048-4', 'game2048-5', 'game2048-6')),
   nickname text not null check (char_length(nickname) between 1 and 20),
   best_score integer not null check (best_score > 0 and best_score <= 1000000000),
   updated_at timestamptz not null default now(),
@@ -34,7 +34,7 @@ begin
   if current_user_id is null then
     raise exception 'Authentication required';
   end if;
-  if p_game_id not in ('snake', 'heshu', 'game2048-4', 'game2048-5', 'game2048-6') then
+  if p_game_id not in ('snake', 'heshu', 'heshu-items', 'game2048-4', 'game2048-5', 'game2048-6') then
     raise exception 'Unsupported game';
   end if;
   if p_score is null or p_score <= 0 or p_score > 1000000000 then

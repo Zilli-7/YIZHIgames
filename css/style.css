@@ -453,6 +453,12 @@ body {
 }
 .minesweeper-actions .hint-text { margin: 0; }
 .minesweeper-actions #ms-flag-mode { white-space: nowrap; }
+.heshu-tools { margin-bottom: 12px; }
+.heshu-tools [aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent-soft);
+  color: var(--accent-ink);
+}
 
 /* ---------- 通用按钮 ---------- */
 .btn {
@@ -488,7 +494,50 @@ body {
   filter: brightness(1.15);
 }
 
-select, input[type="text"], input[type="number"], textarea {
+#auth-dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  margin: auto;
+  max-height: min(88vh, 760px);
+  max-height: min(88dvh, 760px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  background: var(--game-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+#auth-dialog::backdrop { background: rgba(15, 20, 17, .58); }
+#auth-dialog .dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+#auth-dialog .auth-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+#auth-dialog .auth-form > label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text);
+}
+#auth-dialog .auth-form input {
+  width: 100%;
+  min-width: 0;
+}
+#auth-dialog .dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+select, input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="tel"], textarea {
   background: var(--game-bg);
   border: 1px solid var(--line);
   color: var(--text);
@@ -553,10 +602,25 @@ select:focus, input:focus, textarea:focus {
   .game-theme-control { width: auto; }
   .game-theme-control span { display: none; }
   .game-view-title { font-size: 1.1rem; }
+  #auth-dialog {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 16px;
+    border-radius: 12px;
+    font-size: .92rem;
+  }
+  #auth-dialog .dialog-heading h2 { font-size: 1.2rem; }
+  #auth-dialog .dialog-hint { line-height: 1.5; }
+  #auth-dialog .auth-form { gap: 9px; margin-top: 14px; }
+  #auth-dialog .auth-form input { font-size: 16px; }
+  #auth-dialog .dialog-actions > .btn { flex: 1 1 140px; }
+  #auth-dialog #phone-verify { width: 100%; }
   .game-container { padding: 14px; }
   .game-container,
   .game-container > * { min-width: 0; }
   .game-container .game-toolbar { justify-content: center; }
+  .heshu-tools { gap: 7px; }
+  .heshu-tools .btn { flex: 1 1 42%; }
   .minesweeper-game #ms-board-wrap { scrollbar-width: thin; }
   #ts-form, #ts-guess { flex-wrap: wrap; }
   #ts-form input, #ts-guess input { min-width: 0; }

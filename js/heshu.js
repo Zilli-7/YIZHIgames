@@ -1,9 +1,121 @@
 ﻿(function () {
+  const ANIM_MS = { off: 0, fast: 360, medium: 520, slow: 760 };
+  const ANIM_EASING = 'cubic-bezier(.22,.61,.36,1)';
   const CLASSIC_DIFFICULTY = {
     easy: { label: '易', steps: 15 },
     medium: { label: '中', steps: 10 },
     hard: { label: '难', steps: 5 }
   };
+
+  function parseColor(value) {
+    const hex = value.match(/^#([\da-f]{6})$/i);
+    if (hex) {
+      const number = parseInt(hex[1], 16);
+      return { r: number >> 16, g: (number >> 8) & 255, b: number & 255 };
+    }
+    const rgb = value.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/i);
+    if (rgb) return { r: Number(rgb[1]), g: Number(rgb[2]), b: Number(rgb[3]) };
+    throw new Error('无法解析合数方块主题色：' + value);
+  }
+
+  function toHsl(color) {
+    const r = color.r / 255, g = color.g / 255, b = color.b / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const delta = max - min;
+    let h = 0;
+    const l = (max + min) / 2;
+    let s = 0;
+    if (delta !== 0) {
+      s = delta / (1 - Math.abs(2 * l - 1));
+      if (max === r) h = ((g - b) / delta) % 6;
+      else if (max === g) h = (b - r) / delta + 2;
+      else h = (r - g) / delta + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    return { h, s };
+  }
+
+  function fromHsl(h, s, l) {
+    const chroma = (1 - Math.abs(2 * l - 1)) * s;
+    const x = chroma * (1 - Math.abs((h / 60) % 2 - 1));
+    const match = l - chroma / 2;
+    let rgb;
+    if (h < 60) rgb = [chroma, x, 0];
+    else if (h < 120) rgb = [x, chroma, 0];
+    else if (h < 180) rgb = [0, chroma, x];
+    else if (h < 240) rgb = [0, x, chroma];
+    else if (h < 300) rgb = [x, 0, chroma];
+    else rgb = [chroma, 0, x];
+    return rgb.map(channel => Math.round((channel + match) * 255));
+  }
+
+  function relativeLuminance(color) {
+    const channels = [color.r, color.g, color.b].map(channel => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+  }
+
+  function contrastRatio(a, b) {
+    const values = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+    return (values[0] + 0.05) / (values[1] + 0.05);
+  }
+
+  let themeTilePalette = [];
+
+  function readThemeTilePalette() {
+    const styles = getComputedStyle(document.documentElement);
+    return Array.from({ length: 6 }, (_, index) => {
+      const value = styles.getPropertyValue('--tile-' + (index + 1)).trim();
+      if (!value) throw new Error('缺少合数方块主题色：--tile-' + (index + 1));
+      return parseColor(value);
+    });
+  }
+
+  function themedTileColor(value) {
+    const tileValue = Math.max(1, Math.floor(value));
+    const level = tileValue - 1;
+    const paletteIndex = level % themeTilePalette.length;
+    const shade = Math.floor(level / themeTilePalette.length);
+    const hsl = toHsl(themeTilePalette[paletteIndex]);
+    const saturation = Math.min(0.62, Math.max(hsl.s, 0.38));
+    const lightness = shade % 2 === 0
+      ? (shade === 0 ? 0.90 : 0.95) - paletteIndex * 0.105
+      : 0.25 + paletteIndex * 0.105;
+    const darkInk = { r: 32, g: 37, b: 31 };
+    const lightInk = { r: 247, g: 244, b: 232 };
+    let adjustedLightness = lightness;
+    let rgb = fromHsl(hsl.h, saturation, adjustedLightness);
+    let background = { r: rgb[0], g: rgb[1], b: rgb[2] };
+    let darkContrast = contrastRatio(darkInk, background);
+    let lightContrast = contrastRatio(lightInk, background);
+    for (let attempt = 0; Math.max(darkContrast, lightContrast) < 4.5 && attempt < 40; attempt++) {
+      adjustedLightness += darkContrast >= lightContrast ? 0.01 : -0.01;
+      adjustedLightness = Math.max(0, Math.min(1, adjustedLightness));
+      rgb = fromHsl(hsl.h, saturation, adjustedLightness);
+      background = { r: rgb[0], g: rgb[1], b: rgb[2] };
+      darkContrast = contrastRatio(darkInk, background);
+      lightContrast = contrastRatio(lightInk, background);
+    }
+    return {
+      background: 'rgb(' + rgb.join(', ') + ')',
+      ink: darkContrast >= lightContrast ? '#20251F' : '#F7F4E8'
+    };
+  }
+
+  function themedTileFontSize(value) {
+    return value >= 10 ? '1.1rem' : '1.3rem';
+  }
+
+  function paintTile(element, value) {
+    const color = themedTileColor(value);
+    element.style.background = color.background;
+    element.style.color = color.ink;
+    element.style.fontSize = themedTileFontSize(value);
+    element.style.fontWeight = '700';
+  }
 
   function buildClassicGame() {
     return function init(container) {
@@ -22,7 +134,9 @@
       let gameOver = false;
       let settled = false;
       let selectedDifficulty = 'medium';
+      let animSpeed = 'medium';
       const domMap = new Map();
+      themeTilePalette = readThemeTilePalette();
       const root = document.createElement('div');
       root.style.cssText = 'display:flex;flex-direction:column;align-items:center;width:100%;';
 
@@ -38,6 +152,14 @@
             '<option value="easy">易</option>' +
             '<option value="medium" selected>中</option>' +
             '<option value="hard">难</option>' +
+          '</select>' +
+        '</label>' +
+        '<label class="stat" style="display:flex;align-items:center;gap:4px;">🎞 动画' +
+          '<select id="hs-anim">' +
+            '<option value="off">关闭</option>' +
+            '<option value="fast">快</option>' +
+            '<option value="medium" selected>适中</option>' +
+            '<option value="slow">慢</option>' +
           '</select>' +
         '</label>' +
         '<button class="btn btn-sm btn-primary" id="hs-new" type="button">新游戏</button>';
@@ -70,6 +192,7 @@
       const scoreEl = bar.querySelector('#hs-score');
       const maxEl = bar.querySelector('#hs-max');
       const diffSel = bar.querySelector('#hs-difficulty');
+      const animSel = bar.querySelector('#hs-anim');
       const newBtn = bar.querySelector('#hs-new');
 
       function tileX(col) { return PAD + col * (CELL + GAP); }
@@ -83,23 +206,15 @@
         return arr;
       }
 
-      function readThemePalette() {
-        return {
-          accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#A8CBAA',
-          text: getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#F1F6EE'
-        };
-      }
-
-      function colorFor(value) {
-        const palette = readThemePalette();
-        const baseHue = 150;
-        const bg = 'hsl(' + ((baseHue + (value - 1) * 18) % 360) + ' 60% ' + (64 - Math.min(30, value * 2)) + '%)';
-        const ink = value > 6 ? '#1D2B2A' : palette.text;
-        return { background: bg, ink };
-      }
-
       function tileAt(row, col) {
         return tiles.find(tile => tile.row === row && tile.col === col) || null;
+      }
+
+      function animMs() { return ANIM_MS[animSpeed]; }
+
+      function waitForAnimation() {
+        const duration = animMs();
+        return duration > 0 ? new Promise(resolve => setTimeout(resolve, duration + 24)) : Promise.resolve();
       }
 
       function groupKey(tile) { return tile.row + ':' + tile.col; }
@@ -166,35 +281,86 @@
       }
 
       function renderTiles() {
+        const duration = animMs();
         const active = new Set();
         for (const tile of tiles) {
           active.add(tile.id);
           let el = domMap.get(tile.id);
+          let isNew = false;
           if (!el) {
             el = document.createElement('div');
-            el.style.cssText = 'position:absolute;width:' + CELL + 'px;height:' + CELL + 'px;display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:10px;left:0;top:0;cursor:pointer;will-change:transform;';
+            el.style.cssText = 'position:absolute;width:' + CELL + 'px;height:' + CELL + 'px;display:flex;align-items:center;justify-content:center;border-radius:10px;left:0;top:0;cursor:pointer;will-change:transform;';
             const label = document.createElement('span');
             label.textContent = tile.value;
+            label.style.willChange = 'transform';
             el.appendChild(label);
             el.addEventListener('click', () => onTileClick(tile));
             domMap.set(tile.id, el);
             boardEl.appendChild(el);
+            isNew = true;
           }
-          const color = colorFor(tile.value);
-          el.style.background = color.background;
-          el.style.color = color.ink;
+
+          const label = el.querySelector('span');
+          const valueChanged = label.textContent !== String(tile.value);
+          if (isNew && tile.isNew && duration > 0) {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+              (tileY(tile.row) - CELL - GAP) + 'px,0) scale(.88)';
+          } else {
+            el.style.transition = duration > 0
+              ? 'transform ' + duration + 'ms ' + ANIM_EASING
+              : 'none';
+          }
+          paintTile(el, tile.value);
           el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' + tileY(tile.row) + 'px,0) scale(1)';
-          el.querySelector('span').textContent = tile.value;
+          if (valueChanged) {
+            label.textContent = tile.value;
+            if (duration > 0) {
+              label.animate(
+                [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
+                { duration: Math.min(360, duration), easing: ANIM_EASING }
+              );
+            }
+          }
+          if (isNew && tile.isNew && duration > 0) {
+            el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+              (tileY(tile.row) - CELL - GAP) + 'px,0) scale(.88)';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              el.style.transition = 'transform ' + duration + 'ms ' + ANIM_EASING +
+                ', opacity ' + Math.min(220, duration) + 'ms ease-out';
+              el.style.opacity = '1';
+              el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+                tileY(tile.row) + 'px,0) scale(1)';
+            }));
+          }
         }
         for (const [id, el] of domMap) {
           if (!active.has(id)) {
-            el.remove();
-            domMap.delete(id);
+            el.style.pointerEvents = 'none';
+            el.style.transition = 'opacity 180ms ease-out, transform 180ms ease-out';
+            el.style.opacity = '0';
+            el.style.transform += ' scale(.72)';
+            setTimeout(() => {
+              if (!tiles.some(tile => tile.id === id)) {
+                el.remove();
+                domMap.delete(id);
+              }
+            }, 190);
           }
         }
+        tiles.forEach(tile => { tile.isNew = false; });
         stepsEl.textContent = steps;
         scoreEl.textContent = score;
         maxEl.textContent = GameHub.loadBest('heshu-score');
+      }
+
+      function onThemeChange() {
+        themeTilePalette = readThemeTilePalette();
+        for (const tile of tiles) {
+          const el = domMap.get(tile.id);
+          if (el) paintTile(el, tile.value);
+        }
       }
 
       function applyGravity() {
@@ -218,8 +384,6 @@
           }
         }
       }
-
-      function waitForAnimation() { return Promise.resolve(); }
 
       async function resolveBoard(currentTurn, directTile) {
         let direct = false;
@@ -245,6 +409,7 @@
             }
             target.value = mergedValue;
           }
+          renderTiles();
           await waitForAnimation();
           if (currentTurn !== turnId) return { direct, chains };
           applyGravity();
@@ -312,7 +477,9 @@
         stepLimit = CLASSIC_DIFFICULTY[selectedDifficulty].steps;
         newGame();
       });
+      animSel.addEventListener('change', () => { animSpeed = animSel.value; });
       newBtn.addEventListener('click', newGame);
+      window.addEventListener('gamehub-theme-change', onThemeChange);
       window.addEventListener('resize', () => {
         const containerWidth = container.clientWidth || 420;
         const fitted = Math.max(28, Math.min(48, Math.floor((Math.min(720, containerWidth - 32) - GAP * (SIZE - 1) - PAD * 2 - 4) / SIZE)));
@@ -331,6 +498,7 @@
       stepLimit = CLASSIC_DIFFICULTY[selectedDifficulty].steps;
       newGame();
       return function cleanup() {
+        window.removeEventListener('gamehub-theme-change', onThemeChange);
         window.removeEventListener('resize', this);
       };
     };
@@ -358,7 +526,9 @@
       let animSpeed = 'medium';
       let selectedTool = null;
       let settled = false;
+      let roundActive = false;
       const domMap = new Map();
+      themeTilePalette = readThemeTilePalette();
 
       try {
         const saved = Number.parseInt(localStorage.getItem(COINS_KEY), 10);
@@ -440,13 +610,6 @@
       function tileX(col) { return PAD + col * (CELL + GAP); }
       function tileY(row) { return PAD + row * (CELL + GAP); }
       function parseColor(value) { return value; }
-      function colorFor(value) {
-        const num = Math.max(1, Math.min(12, value));
-        const hue = (46 + (num * 15)) % 360;
-        const lightness = 64 - Math.min(28, num * 2.2);
-        return { background: 'hsl(' + hue + ' 72% ' + lightness + '%)', ink: '#1a1c1d' };
-      }
-
       function tileAt(row, col) { return tiles.find(tile => tile.row === row && tile.col === col) || null; }
       function groupKey(tile) { return tile.row + ':' + tile.col; }
       function findGroup(start, visited = new Set()) {
@@ -482,39 +645,88 @@
       }
       function makeTile(tile) {
         const el = document.createElement('div');
-        el.style.cssText = 'position:absolute;width:' + CELL + 'px;height:' + CELL + 'px;display:flex;align-items:center;justify-content:center;font-weight:700;border-radius:10px;left:0;top:0;cursor:pointer;will-change:transform;';
+        el.style.cssText = 'position:absolute;width:' + CELL + 'px;height:' + CELL + 'px;display:flex;align-items:center;justify-content:center;border-radius:10px;left:0;top:0;cursor:pointer;will-change:transform;';
         const label = document.createElement('span');
         label.textContent = tile.value;
+        label.style.willChange = 'transform';
         el.appendChild(label);
         el.addEventListener('click', () => onTileClick(tile));
         return el;
       }
       function renderTiles() {
+        const duration = animMs();
         const active = new Set();
         for (const tile of tiles) {
           active.add(tile.id);
           let el = domMap.get(tile.id);
+          let isNew = false;
           if (!el) {
             el = makeTile(tile);
             domMap.set(tile.id, el);
             boardEl.appendChild(el);
+            isNew = true;
           }
-          const color = colorFor(tile.value);
-          el.style.background = color.background;
-          el.style.color = color.ink;
+          const label = el.querySelector('span');
+          const valueChanged = label.textContent !== String(tile.value);
+          if (isNew && tile.isNew && duration > 0) {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+              (tileY(tile.row) - CELL - GAP) + 'px,0) scale(.88)';
+          } else {
+            el.style.transition = duration > 0
+              ? 'transform ' + duration + 'ms ' + ANIM_EASING
+              : 'none';
+          }
+          paintTile(el, tile.value);
           el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' + tileY(tile.row) + 'px,0) scale(1)';
-          el.querySelector('span').textContent = tile.value;
+          if (valueChanged) {
+            label.textContent = tile.value;
+            if (duration > 0) {
+              label.animate(
+                [{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }],
+                { duration: Math.min(360, duration), easing: ANIM_EASING }
+              );
+            }
+          }
+          if (isNew && tile.isNew && duration > 0) {
+            el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+              (tileY(tile.row) - CELL - GAP) + 'px,0) scale(.88)';
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+              el.style.transition = 'transform ' + duration + 'ms ' + ANIM_EASING +
+                ', opacity ' + Math.min(220, duration) + 'ms ease-out';
+              el.style.opacity = '1';
+              el.style.transform = 'translate3d(' + tileX(tile.col) + 'px,' +
+                tileY(tile.row) + 'px,0) scale(1)';
+            }));
+          }
         }
         for (const [id, el] of domMap) {
           if (!active.has(id)) {
-            el.remove();
-            domMap.delete(id);
+            el.style.pointerEvents = 'none';
+            el.style.transition = 'opacity 180ms ease-out, transform 180ms ease-out';
+            el.style.opacity = '0';
+            el.style.transform += ' scale(.72)';
+            setTimeout(() => {
+              if (!tiles.some(tile => tile.id === id)) {
+                el.remove();
+                domMap.delete(id);
+              }
+            }, 190);
           }
         }
+        tiles.forEach(tile => { tile.isNew = false; });
         stepsEl.textContent = steps;
         coinsEl.textContent = coins;
         scoreEl.textContent = score;
         maxEl.textContent = bestScore;
+      }
+      function onThemeChange() {
+        themeTilePalette = readThemeTilePalette();
+        for (const tile of tiles) {
+          const el = domMap.get(tile.id);
+          if (el) paintTile(el, tile.value);
+        }
       }
       function saveCoins(value) {
         try {
@@ -528,6 +740,11 @@
         coins = value;
         coinsEl.textContent = coins;
         return true;
+      }
+      function animMs() { return ANIM_MS[animSpeed]; }
+      function waitForAnimation() {
+        const duration = animMs();
+        return duration > 0 ? new Promise(resolve => setTimeout(resolve, duration + 24)) : Promise.resolve();
       }
       function applyGravity() {
         for (let col = 0; col < SIZE; col++) {
@@ -549,7 +766,6 @@
           }
         }
       }
-      function waitForAnimation() { return Promise.resolve(); }
       async function resolveBoard(currentTurn, directTile) {
         let direct = false;
         let chains = 0;
@@ -584,17 +800,25 @@
         }
         return { direct, chains };
       }
-      function finishGame() {
-        if (settled) return;
+      function settleRound() {
+        if (settled || !roundActive) return null;
         settled = true;
-        gameOver = true;
-        steps = 0;
         const earned = Math.floor(score / 50);
         const payoutSaved = saveCoins(coins + earned);
         const isNew = GameHub.saveBest('heshu-items-score', score);
         bestScore = Math.max(bestScore, score);
         maxEl.textContent = bestScore;
-        msgEl.textContent = '💥 步数耗尽！得分 ' + score + '，结算获得 ' + earned + ' 金币' + (payoutSaved ? '' : '（保存失败）') + (isNew ? ' · 新纪录！' : '');
+        roundActive = false;
+        return { earned, payoutSaved, isNew, score };
+      }
+      function finishGame() {
+        if (settled) return;
+        gameOver = true;
+        steps = 0;
+        const result = settleRound();
+        if (!result) return;
+        msgEl.textContent = '💥 步数耗尽！得分 ' + result.score + '，结算获得 ' + result.earned +
+          ' 金币' + (result.payoutSaved ? '' : '（保存失败）') + (result.isNew ? ' · 新纪录！' : '');
         msgEl.className = 'msg danger';
       }
       async function performAction(action, currentTurn) {
@@ -623,6 +847,7 @@
           }
           if (!saveCoins(coins - cost)) return;
         }
+        roundActive = true;
         steps = Math.max(0, steps - 1);
         const directTile = action.kind === 'tile' && !action.tool ? target : null;
         if (action.kind === 'tile') {
@@ -705,6 +930,7 @@
         if (!animating) void processQueue();
       });
       function newGame() {
+        const result = settleRound();
         turnId++;
         queuedClicks = [];
         selectedTool = null;
@@ -713,7 +939,13 @@
         score = 0;
         steps = INITIAL_STEPS;
         settled = false;
+        roundActive = false;
         gameOver = false;
+        msgEl.textContent = result
+          ? '上一局结算：得分 ' + result.score + '，获得 ' + result.earned + ' 金币' +
+            (result.payoutSaved ? '' : '（金币保存失败）') + (result.isNew ? ' · 新纪录！' : '')
+          : '';
+        msgEl.className = result ? (result.payoutSaved ? 'msg ok' : 'msg danger') : 'msg';
         domMap.forEach(el => el.remove());
         domMap.clear();
         let clean = false;
@@ -742,10 +974,12 @@
       bar.querySelector('#hs-new').addEventListener('click', newGame);
       animSel.addEventListener('change', () => { animSpeed = animSel.value; });
       window.addEventListener('resize', onResize);
+      window.addEventListener('gamehub-theme-change', onThemeChange);
       container.appendChild(root);
       newGame();
       return function cleanup() {
         window.removeEventListener('resize', onResize);
+        window.removeEventListener('gamehub-theme-change', onThemeChange);
       };
     };
   }

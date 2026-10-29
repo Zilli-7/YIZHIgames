@@ -1,7 +1,7 @@
 /**
  * AIHost —— 海龟汤等游戏的 LLM 主持人客户端。
  * 依赖 js/ai-config.js（window.AI_CONFIG）。
- * 用户自带密钥只存在其浏览器 localStorage；站点密钥始终在服务端，绝不进入前端。
+ * 用户自带密钥只存在其浏览器 localStorage；站点密钥始终在 Worker 端，绝不进入前端。
  */
 (function () {
   const CFG = window.AI_CONFIG || {};
@@ -35,10 +35,10 @@
    * @returns {Promise<{text?:string, error?:string}>}
    */
   async function chat(context, history) {
-    if (!configured()) return { error: 'AI 未配置：请在 js/ai-config.js 填入代理地址。' };
+    if (!configured()) return { error: 'AI 未配置：请在 js/ai-config.js 填入 Worker 代理地址。' };
     if (!enabled()) return { error: 'AI 已关闭' };
     const byok = getByokKey();
-    const url = endpoint();
+    const url = endpoint() + (byok ? '/byok' : '');
     const headers = { 'Content-Type': 'application/json' };
     if (byok) headers['x-byok-key'] = byok;
     const messages = [{ role: 'system', content: context }].concat(history || []);
@@ -69,7 +69,7 @@
     const line = document.getElementById('ai-status-line');
     if (!line) return;
     if (!configured()) {
-      line.textContent = '当前：AI 未配置（需在 js/ai-config.js 填写代理地址）';
+      line.textContent = '当前：AI 未配置（需在 js/ai-config.js 填写 Worker 地址）';
     } else if (!enabled()) {
       line.textContent = '当前：AI 已关闭（使用本地规则）';
     } else if (getByokKey()) {
